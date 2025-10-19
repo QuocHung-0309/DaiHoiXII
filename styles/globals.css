@@ -1,0 +1,162 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ==== Brand palette (from the logo) ====
+   Blue core:  #00A7E1 (sky/cyan), #0077C8 (deep)
+   Orange:     #FF8A00 (vivid), #FFC24A (amber)
+   Ink/Navy:   #0B1E3A
+   Light bg:   #FFFFFF
+   Light border: #E6EEF5
+*/
+
+:root {
+  /* Base */
+  --background: #ffffff;
+  --foreground: #0B1E3A;
+
+  /* Surfaces */
+  --card: #ffffff;
+  --card-foreground: #0B1E3A;
+  --popover: #ffffff;
+  --popover-foreground: #0B1E3A;
+
+  /* Brand */
+  --primary: #00A7E1;                  /* sky/cyan like “HCMUTE” ribbon */
+  --primary-foreground: #ffffff;
+  --secondary: #FF8A00;                /* vivid orange arc */
+  --secondary-foreground: #0B1E3A;
+  --accent: #FFC24A;                    /* amber highlight */
+  --accent-foreground: #0B1E3A;
+
+  /* Content helpers */
+  --muted: #F5FAFF;
+  --muted-foreground: #5B6B80;
+
+  /* Feedback */
+  --destructive: #E5484D;
+  --destructive-foreground: #ffffff;
+
+  /* Lines & focus */
+  --border: #E6EEF5;
+  --input: #E6EEF5;
+  --ring: #00A7E1;
+
+  /* Charts (brand-friendly order) */
+  --chart-1: #0077C8;  /* deep blue */
+  --chart-2: #00A7E1;  /* sky/cyan */
+  --chart-3: #FF8A00;  /* orange */
+  --chart-4: #FFC24A;  /* amber */
+  --chart-5: #1BC5BD;  /* teal accent (from circuitry vibe) */
+
+  /* Layout */
+  --radius: 0.625rem;
+
+  /* Sidebar */
+  --sidebar: #F7FBFF;
+  --sidebar-foreground: #0B1E3A;
+  --sidebar-primary: #0077C8;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #E8F6FF;
+  --sidebar-accent-foreground: #0B1E3A;
+  --sidebar-border: #E6EEF5;
+  --sidebar-ring: #00A7E1;
+}
+
+/* Dark mode tuned to brand (deep navy with bright blues/oranges) */
+.dark {
+  --background: #0A1729;
+  --foreground: #EAF6FF;
+
+  --card: #0F223D;
+  --card-foreground: #EAF6FF;
+  --popover: #0F223D;
+  --popover-foreground: #EAF6FF;
+
+  --primary: #4CC9FF;               /* brighter for contrast on dark */
+  --primary-foreground: #0A1729;
+  --secondary: #FF8A00;
+  --secondary-foreground: #0A1729;
+  --accent: #FFC24A;
+  --accent-foreground: #0A1729;
+
+  --muted: #0D213A;
+  --muted-foreground: #9AB3C9;
+
+  --destructive: #FF5C62;
+  --destructive-foreground: #0A1729;
+
+  --border: #163152;
+  --input: #163152;
+  --ring: #4CC9FF;
+
+  --chart-1: #4CC9FF;
+  --chart-2: #00A7E1;
+  --chart-3: #FF8A00;
+  --chart-4: #FFC24A;
+  --chart-5: #22D3EE;
+
+  --sidebar: #0F223D;
+  --sidebar-foreground: #EAF6FF;
+  --sidebar-primary: #00A7E1;
+  --sidebar-primary-foreground: #0A1729;
+  --sidebar-accent: #112945;
+  --sidebar-accent-foreground: #EAF6FF;
+  --sidebar-border: #163152;
+  --sidebar-ring: #4CC9FF;
+}
+
+@theme inline {
+  --font-sans: "Geist", "Geist Fallback";
+  --font-mono: "Geist Mono", "Geist Mono Fallback";
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * { @apply border-border; }
+  body { @apply bg-background text-foreground; }
+}
+
+/* Optional sugar: brand gradients */
+.brand-gradient-blue { background: linear-gradient(135deg, #00A7E1 0%, #2BB3FF 45%, #66D9FF 100%); }
+.brand-gradient-orange { background: linear-gradient(135deg, #FF8A00 0%, #FFA63A 55%, #FFC24A 100%); }

@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Document {
+  id        String   @id @default(cuid())
+  title     String
+  category  String   // Báo cáo / Nghị quyết...
+  status    String   // voting | pending | completed
+  deadline  DateTime?
+  description String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  votes     Vote[]
+  feedbacks Feedback[]
+}
+
+model Vote {
+  id          String   @id @default(cuid())
+  documentId  String
+  choice      VoteChoice
+  // nếu cần ràng buộc 1 người 1 phiếu có thể thêm mssv hoặc token
+  mssv        String?  // optional: dùng khi bạn mở khóa theo MSSV
+  unit        String?  // Đơn vị/Khoa
+  ip          String?
+  ua          String?
+  createdAt   DateTime @default(now())
+
+  document    Document @relation(fields: [documentId], references: [id])
+
+  @@index([documentId])
+  @@index([mssv])
+}
+
+enum VoteChoice {
+  AGREE
+  DISAGREE
+  ABSTAIN
+}
+
+model Feedback {
+  id          String   @id @default(cuid())
+  documentId  String
+  fullname    String
+  studentId   String
+  email       String
+  unit        String
+  content     String   // tối đa 2500 ký tự
+  fileUrl     String?  // link file (S3/local)
+  tag         String?  // tích cực | trung lập | đề nghị chỉnh sửa
+  ip          String?
+  ua          String?
+  createdAt   DateTime @default(now())
+
+  document    Document @relation(fields: [documentId], references: [id])
+
+  @@index([documentId])
+  @@index([createdAt])
+}
