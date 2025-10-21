@@ -14,10 +14,12 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { motion, type Variants } from "framer-motion";
+import { IdGateModal } from "@/components/id-gate-modal";
 
 import JourneyTimeline from "@/components/JourneyTimeline";
 import CountUp from "@/components/CountUp";
 import HomeNews from "@/components/HomeNews";
+import { IdGateClient } from "@/components/IdGateClient";
 
 /* ===== Animation easings & variants (TS-safe) ===== */
 const EASE: readonly [number, number, number, number] = [0.16, 1, 0.3, 1];
@@ -51,6 +53,7 @@ const itemVariants: Variants = {
 };
 
 export default function HomePage() {
+  <IdGateClient />;
   // Fallback màu tươi (nếu theme đã có CSS variables thì var(--*) sẽ ghi đè)
   const cssVars: CSSProperties = {
     // @ts-ignore custom props
@@ -110,6 +113,7 @@ export default function HomePage() {
       initial="initial"
       animate="animate"
     >
+      <IdGateClient />
       {/* ====== HERO ====== */}
       <motion.section
         className="relative overflow-hidden pt-16 pb-20 text-white"
@@ -252,7 +256,6 @@ export default function HomePage() {
           </motion.div>
         </div>
       </motion.section>
-
       {/* ====== INFO ====== */}
       <motion.section className="relative -mt-10" variants={sectionVariants}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -336,7 +339,6 @@ export default function HomePage() {
           </motion.div>
         </div>
       </motion.section>
-
       {/* ====== TIMELINE ====== */}
       <motion.div variants={sectionVariants}>
         <JourneyTimeline
@@ -378,7 +380,6 @@ export default function HomePage() {
         />
       </motion.div>
       <HomeNews />
-
       {/* ====== FEATURES ====== */}
       <motion.section className="py-16 flex-1" variants={sectionVariants}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -433,7 +434,6 @@ export default function HomePage() {
           </motion.div>
         </div>
       </motion.section>
-
       {/* ====== QUICK STATS ====== */}
       <motion.section
         className="bg-white/70 backdrop-blur py-12 border-t"
@@ -489,7 +489,6 @@ export default function HomePage() {
           </motion.div>
         </div>
       </motion.section>
-
       <div className="sr-only" aria-live="polite">
         {/* screen-reader announce copy thành công (nếu cần nâng cấp) */}
         <CheckCircle2 />

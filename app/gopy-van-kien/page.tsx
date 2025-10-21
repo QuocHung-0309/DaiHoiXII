@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import useSWR from "swr";
 import { motion, type Variants } from "framer-motion";
 import {
   FileText,
@@ -9,13 +10,16 @@ import {
   IdCard,
   Mail,
   Building2,
-  UploadCloud,
   CheckCircle2,
   AlertCircle,
   Info,
 } from "lucide-react";
 
-/* Animations nhẹ, trung tính */
+/* -------------------- fetcher -------------------- */
+const fetcher = (url: string) =>
+  fetch(url, { cache: "no-store" }).then((r) => r.json());
+
+/* -------------------- animations -------------------- */
 const EASE: readonly [number, number, number, number] = [0.16, 1, 0.3, 1];
 const pageV: Variants = {
   initial: { opacity: 0 },
@@ -26,37 +30,70 @@ const itemV: Variants = {
   animate: { opacity: 1, y: 0, transition: { duration: 0.35, ease: EASE } },
 };
 
+/* -------------------- types -------------------- */
 type Doc = { id: string; title: string };
-const DOCS: Doc[] = [
-  { id: "1", title: "Báo cáo tổng kết nhiệm kỳ 2022–2024" },
-  { id: "2", title: "Phương hướng hoạt động nhiệm kỳ 2024–2026" },
-  { id: "3", title: "Điều lệ Hội Sinh viên (sửa đổi)" },
-  { id: "4", title: "Quy chế hoạt động Ban chấp hành" },
-  { id: "5", title: "Kế hoạch tài chính nhiệm kỳ 2024–2026" },
-];
 
 type FormDataT = {
   fullname: string;
   studentId: string;
   email: string;
   unit: string;
-  docId: string;
+  docId: string; // gửi lên backend qua field documentId
   content: string;
   agree: boolean;
   file?: File | null;
 };
 
+/* =======================================================
+   PAGE
+======================================================= */
 export default function FeedbackPage() {
+  // 1) Lấy danh sách văn kiện thật
+  const { data: docsResp } = useSWR<{ items: Doc[] }>(
+    "/api/documents/compact",
+    fetcher,
+    { refreshInterval: 15_000 }
+  );
+  const DOCS: Doc[] = docsResp?.items ?? [];
+
+  // 2) Prefill + state
   const [data, setData] = useState<FormDataT>({
     fullname: "",
     studentId: "",
     email: "",
     unit: "",
-    docId: DOCS[0].id,
+    docId: "", // set sau khi DOCS có dữ liệu
     content: "",
     agree: false,
     file: null,
   });
+
+  // set docId mặc định khi DOCS đã load
+  useEffect(() => {
+    if (!data.docId && DOCS.length > 0) {
+      setData((s) => ({ ...s, docId: DOCS[0].id }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [DOCS.length]);
+
+  // prefill profile từ localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem("feedback.profile");
+    if (!saved) return;
+    try {
+      const p = JSON.parse(saved);
+      setData((s) => ({
+        ...s,
+        fullname: p.fullname ?? s.fullname,
+        studentId: p.studentId ?? s.studentId,
+        email: p.email ?? s.email,
+        unit: p.unit ?? s.unit,
+      }));
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
   const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState<"ok" | "err" | null>(null);
 
@@ -65,7 +102,7 @@ export default function FeedbackPage() {
 
   const currentDoc = useMemo(
     () => DOCS.find((d) => d.id === data.docId)?.title ?? "",
-    [data.docId]
+    [DOCS, data.docId]
   );
   const contentLen = data.content.trim().length;
 
@@ -75,6 +112,7 @@ export default function FeedbackPage() {
     if (!data.studentId.trim()) return "Vui lòng nhập MSSV.";
     if (!emailOk) return "Email không hợp lệ.";
     if (!data.unit.trim()) return "Vui lòng nhập Đơn vị/Khoa.";
+    if (!data.docId) return "Vui lòng chọn văn kiện.";
     if (contentLen < 30) return "Nội dung góp ý quá ngắn (≥ 30 ký tự).";
     if (!data.agree)
       return "Vui lòng đồng ý cho phép sử dụng thông tin góp ý để tổng hợp.";
@@ -86,32 +124,51 @@ export default function FeedbackPage() {
     const err = validate();
     if (err) {
       setStatus("err");
-      return alert(err);
+      alert(err);
+      return;
     }
+
     try {
       setSubmitting(true);
       setStatus(null);
-      // TODO: gọi API backend của bạn
-      await new Promise((r) => setTimeout(r, 800));
-      setStatus("ok");
-      setData({
-        fullname: "",
-        studentId: "",
-        email: "",
-        unit: "",
-        docId: DOCS[0].id,
-        content: "",
-        agree: false,
-        file: null,
+
+      // Lưu profile để tự điền lần sau
+      localStorage.setItem(
+        "feedback.profile",
+        JSON.stringify({
+          fullname: data.fullname,
+          studentId: data.studentId,
+          email: data.email,
+          unit: data.unit,
+        })
+      );
+
+      // Gửi JSON — backend nhận field documentId
+      const res = await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullname: data.fullname,
+          studentId: data.studentId,
+          email: data.email,
+          unit: data.unit,
+          documentCode: String(data.docId), // ✅ đổi về documentId
+          content: data.content,
+          consent: data.agree,
+        }),
       });
-    } catch {
+      if (!res.ok) throw new Error(await res.text());
+
+      setStatus("ok");
+      setData((s) => ({ ...s, content: "", agree: false, file: null }));
+    } catch (e) {
+      console.error(e);
       setStatus("err");
     } finally {
       setSubmitting(false);
     }
   }
 
-  /* ======= UI ======= */
   return (
     <motion.div
       variants={pageV}
@@ -119,7 +176,7 @@ export default function FeedbackPage() {
       animate="animate"
       className="min-h-screen bg-[rgb(248_250_252)]"
     >
-      {/* Header đơn giản, không màu mè */}
+      {/* Header */}
       <header className="border-b border-slate-200 bg-white/70 backdrop-blur">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
@@ -135,14 +192,14 @@ export default function FeedbackPage() {
       {/* Body */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          {/* Left: banner + notes (trung tính) */}
+          {/* Aside */}
           <motion.aside
             variants={itemV}
             className="lg:col-span-2 rounded-2xl bg-white border border-slate-200 shadow-sm"
           >
             <div className="relative h-[280px] overflow-hidden rounded-t-2xl">
               <Image
-                src="/gopy-banner.jpg" // đổi ảnh nếu cần
+                src="/gopy-banner.jpg"
                 alt="Góp ý văn kiện"
                 fill
                 className="object-cover"
@@ -170,7 +227,7 @@ export default function FeedbackPage() {
             </div>
           </motion.aside>
 
-          {/* Right: form */}
+          {/* Form */}
           <motion.form
             onSubmit={onSubmit}
             variants={itemV}
@@ -249,20 +306,25 @@ export default function FeedbackPage() {
                   className="Input"
                   value={data.docId}
                   onChange={(e) => onChange("docId", e.target.value)}
+                  disabled={!DOCS.length}
                 >
-                  {DOCS.map((d) => (
-                    <option key={d.id} value={d.id}>
-                      {d.title}
-                    </option>
-                  ))}
+                  {DOCS.length === 0 ? (
+                    <option>Đang tải danh sách…</option>
+                  ) : (
+                    DOCS.map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.title}
+                      </option>
+                    ))
+                  )}
                 </select>
               </Field>
             </div>
 
-            {/* CONTENT — trung tính */}
+            {/* CONTENT */}
             <div className="mt-4">
               <label className="Label">
-                Góp ý cho: <b>{currentDoc}</b>
+                Góp ý cho: <b>{currentDoc || "…"}</b>
               </label>
               <div className="relative">
                 <textarea
@@ -276,7 +338,6 @@ export default function FeedbackPage() {
                   {contentLen}/2500
                 </span>
               </div>
-              {/* progress & hint (màu slate) */}
               <div className="mt-2 h-1.5 w-full rounded-full bg-slate-200 overflow-hidden">
                 <div
                   className="h-full bg-slate-600 transition-all duration-300"
@@ -299,59 +360,61 @@ export default function FeedbackPage() {
               </div>
             </div>
 
-            {/* File + consent */}
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              
-
-              <div className="rounded-xl border border-slate-200 p-3">
-                <label className="flex items-start gap-2 text-sm text-slate-700 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={data.agree}
-                    onChange={(e) => onChange("agree", e.target.checked)}
-                    className="mt-0.5 h-4 w-4 rounded border-slate-300 text-slate-800 focus:ring-slate-300"
-                  />
-                  <span>
-                    Tôi đồng ý cho phép Đại hội sử dụng thông tin góp ý để tổng
-                    hợp &amp; hoàn thiện văn kiện.
-                  </span>
-                </label>
-              </div>
+            {/* Consent */}
+            <div className="mt-4 rounded-xl border border-slate-200 p-3">
+              <label className="flex items-start gap-2 text-sm text-slate-700 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={data.agree}
+                  onChange={(e) => onChange("agree", e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-slate-800 focus:ring-slate-300"
+                />
+                <span>
+                  Tôi đồng ý cho phép Đại hội sử dụng thông tin góp ý để tổng
+                  hợp & hoàn thiện văn kiện.
+                </span>
+              </label>
             </div>
 
             {/* Submit */}
             <div className="mt-6">
               <button
                 type="submit"
-                disabled={submitting}
+                disabled={submitting || !DOCS.length}
                 className="inline-flex items-center rounded-xl bg-slate-900 px-5 py-2.5 font-semibold text-white shadow hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {submitting ? "Đang gửi…" : "Gửi góp ý"}
               </button>
             </div>
 
-            {/* Styles trung tính */}
+            {/* styles */}
             <style jsx global>{`
               .Label {
                 @apply block text-sm font-medium text-slate-800 mb-1;
               }
               .Input {
-                @apply box-border block w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition
-                               focus:border-slate-500 focus:ring-2 focus:ring-slate-200;
-              }
-              .Dropzone {
-                @apply flex items-center gap-2 w-full rounded-xl border border-dashed border-slate-300 bg-slate-50 px-3 py-2.5 text-sm
-                                  text-slate-700 hover:bg-slate-100 cursor-pointer transition;
+                @apply box-border block w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200;
               }
             `}</style>
           </motion.form>
         </div>
+
+        {/* “Góp ý đã gửi” của tôi — map documentId -> title bằng DOCS */}
+        {data.studentId || data.email ? (
+          <MyFeedbackList
+            studentId={data.studentId}
+            email={data.email}
+            docs={DOCS}
+          />
+        ) : null}
       </main>
     </motion.div>
   );
 }
 
-/* Field helper */
+/* =======================================================
+   Field helper
+======================================================= */
 function Field({
   label,
   icon,
@@ -378,6 +441,63 @@ function Field({
         )}
         <div className={icon ? "pl-9" : ""}>{children}</div>
       </div>
+    </div>
+  );
+}
+
+/* =======================================================
+   “Góp ý của tôi” – GET /api/feedback?studentId=&email=
+   Backend trả { items: [{ id, content, createdAt, documentId }] }
+   FE map documentId -> title qua props.docs
+======================================================= */
+function MyFeedbackList({
+  studentId,
+  email,
+  docs,
+}: {
+  studentId: string;
+  email: string;
+  docs: Doc[];
+}) {
+  const qs = new URLSearchParams({ studentId, email }).toString();
+  const { data } = useSWR<{
+    items: Array<{
+      id: string;
+      content: string;
+      createdAt: string;
+      documentId: string;
+    }>;
+  }>(`/api/feedback?${qs}`, fetcher, { refreshInterval: 10_000 });
+
+  const items = data?.items ?? [];
+
+  const idToTitle = useMemo(() => {
+    const m = new Map<string, string>();
+    docs.forEach((d) => m.set(d.id, d.title));
+    return m;
+  }, [docs]);
+
+  if (!items.length) return null;
+
+  return (
+    <div className="mt-8 rounded-2xl border border-slate-200 bg-white p-6">
+      <div className="text-slate-900 font-semibold mb-3">Góp ý bạn đã gửi</div>
+      <ul className="space-y-3">
+        {items.map((it) => {
+          const title =
+            idToTitle.get(it.documentId) ?? `Văn kiện #${it.documentId}`;
+          return (
+            <li key={it.id} className="rounded-xl border border-slate-200 p-3">
+              <div className="text-sm text-slate-500">
+                {new Date(it.createdAt).toLocaleString("vi-VN")} • {title}
+              </div>
+              <div className="mt-1 text-slate-800 whitespace-pre-line">
+                {it.content}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }

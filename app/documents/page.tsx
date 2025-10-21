@@ -4,68 +4,17 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { motion, type Variants } from "framer-motion";
 import { FileText, Clock, CheckCircle2 } from "lucide-react";
+import { listCompact, type DocStatus } from "@/lib/static-docs"; // <— dùng listCompact
+import { IdGateClient } from "@/components/IdGateClient";
 
-/* ================== BRAND PALETTE (đổi nhanh ở đây) ================== */
+/* ================== BRAND ================== */
 const BRAND = {
-  primaryFrom: "#0EA5E9", // sky-500
-  primaryTo: "#22D3EE", // cyan-400
-  dark: "#0F172A", // slate-900
+  primaryFrom: "#0EA5E9",
+  primaryTo: "#22D3EE",
+  dark: "#0F172A",
 };
 
-/* ================== Mock data ================== */
-const documents = [
-  {
-    id: "1",
-    title: "Báo cáo tổng kết nhiệm kỳ 2022-2024",
-    category: "Báo cáo",
-    status: "voting",
-    deadline: "2024-03-20",
-    description:
-      "Báo cáo tổng kết hoạt động của Hội sinh viên trong nhiệm kỳ 2022-2024",
-  },
-  {
-    id: "2",
-    title: "Phương hướng hoạt động nhiệm kỳ 2024-2026",
-    category: "Nghị quyết",
-    status: "voting",
-    deadline: "2024-03-20",
-    description: "Phương hướng và kế hoạch hoạt động cho nhiệm kỳ mới",
-  },
-  {
-    id: "3",
-    title: "Điều lệ Hội sinh viên (sửa đổi)",
-    category: "Điều lệ",
-    status: "pending",
-    deadline: "2024-03-21",
-    description: "Dự thảo sửa đổi, bổ sung Điều lệ Hội sinh viên",
-  },
-  {
-    id: "4",
-    title: "Quy chế hoạt động Ban chấp hành",
-    category: "Quy chế",
-    status: "completed",
-    deadline: "2024-03-19",
-    description: "Quy định về tổ chức và hoạt động của Ban chấp hành Hội",
-  },
-  {
-    id: "5",
-    title: "Kế hoạch tài chính nhiệm kỳ 2024-2026",
-    category: "Kế hoạch",
-    status: "voting",
-    deadline: "2024-03-20",
-    description: "Dự toán thu chi và kế hoạch tài chính cho nhiệm kỳ mới",
-  },
-  {
-    id: "6",
-    title: "Báo cáo công tác tài chính nhiệm kỳ 2022-2024",
-    category: "Báo cáo",
-    status: "completed",
-    deadline: "2024-03-19",
-    description: "Báo cáo tình hình thu chi và quản lý tài chính nhiệm kỳ qua",
-  },
-] as const;
-
-/* ================== Status config (tone mới) ================== */
+/* ================== Status config ================== */
 const statusConfig = {
   voting: {
     label: "Đang biểu quyết",
@@ -82,11 +31,10 @@ const statusConfig = {
     icon: CheckCircle2,
     chip: "text-emerald-700 bg-emerald-50 ring-1 ring-emerald-200",
   },
-};
+} as const;
 
 /* ================== Animations ================== */
 const EASE: readonly [number, number, number, number] = [0.16, 1, 0.3, 1];
-
 const pageVariants: Variants = {
   initial: { opacity: 0 },
   animate: {
@@ -119,7 +67,8 @@ const cardVariants: Variants = {
 
 /* ================== Utils ================== */
 type StatusFilter = "all" | "voting" | "pending" | "completed";
-function formatDate(d: string) {
+function formatDate(d?: string) {
+  if (!d) return "";
   const date = new Date(d);
   if (isNaN(date.getTime())) return d;
   return date.toLocaleDateString("vi-VN", {
@@ -130,23 +79,22 @@ function formatDate(d: string) {
 }
 
 export default function DocumentsPage() {
+  const docs = listCompact();
   const [filter, setFilter] = useState<StatusFilter>("all");
 
   const counts = useMemo(
     () => ({
-      all: documents.length,
-      voting: documents.filter((d) => d.status === "voting").length,
-      pending: documents.filter((d) => d.status === "pending").length,
-      completed: documents.filter((d) => d.status === "completed").length,
+      all: docs.length,
+      voting: docs.filter((d) => d.status === "voting").length,
+      pending: docs.filter((d) => d.status === "pending").length,
+      completed: docs.filter((d) => d.status === "completed").length,
     }),
-    []
+    [docs]
   );
 
   const filtered = useMemo(() => {
     const list =
-      filter === "all"
-        ? [...documents]
-        : documents.filter((d) => d.status === filter);
+      filter === "all" ? [...docs] : docs.filter((d) => d.status === filter);
     const order: Record<string, number> = {
       voting: 0,
       pending: 1,
@@ -155,9 +103,10 @@ export default function DocumentsPage() {
     return list.sort(
       (a, b) =>
         order[a.status] - order[b.status] ||
-        new Date(a.deadline).getTime() - new Date(b.deadline).getTime()
+        new Date(a.deadline ?? "").getTime() -
+          new Date(b.deadline ?? "").getTime()
     );
-  }, [filter]);
+  }, [docs, filter]);
 
   const filters: { key: StatusFilter; label: string; count: number }[] = [
     { key: "all", label: "Tất cả", count: counts.all },
@@ -202,7 +151,7 @@ export default function DocumentsPage() {
             </p>
           </motion.div>
 
-          {/* Filter Pills (brand gradient) */}
+          {/* Filter Pills */}
           <motion.div className="mb-8" variants={headerVariants}>
             <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white p-1 shadow-lg ring-1 ring-black/5">
               {filters.map((f) => {
@@ -232,8 +181,7 @@ export default function DocumentsPage() {
                     )}
                     <span className="relative z-[1]">{f.label}</span>
                     <span
-                      className={`relative z-[1] ml-2 inline-flex items-center justify-center rounded-full px-2 py-0.5 text-[11px]
-                      ${
+                      className={`relative z-[1] ml-2 inline-flex items-center justify-center rounded-full px-2 py-0.5 text-[11px] ${
                         active
                           ? "bg-white/20 text-white"
                           : "bg-slate-100 text-slate-700"
@@ -308,9 +256,11 @@ export default function DocumentsPage() {
                         {doc.title}
                       </h3>
 
-                      <p className="text-sm text-slate-600 mb-5 line-clamp-2">
-                        {doc.description}
-                      </p>
+                      {doc.description && (
+                        <p className="text-sm text-slate-600 mb-5 line-clamp-2">
+                          {doc.description}
+                        </p>
+                      )}
 
                       <div className="flex items-center justify-between text-sm">
                         <span
@@ -324,7 +274,6 @@ export default function DocumentsPage() {
                         </span>
                       </div>
 
-                      {/* underline gradient khi hover */}
                       <span
                         className="mt-4 block h-[3px] w-0 group-hover:w-full rounded-full transition-all"
                         style={{
