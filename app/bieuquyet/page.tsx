@@ -1,10 +1,19 @@
 "use client";
 
-import Image from "next/image"; // Image không còn dùng nhưng để dự phòng
+import { useState } from "react"; // <-- THÊM MỚI
+import { useRouter } from "next/navigation"; // <-- THÊM MỚI
 import { motion, type Variants } from "framer-motion";
-import { UserRound, IdCard, Mail, Building2, CheckSquare } from "lucide-react";
+import {
+  UserRound,
+  IdCard,
+  Mail,
+  Building2,
+  CheckSquare,
+  Loader2, // <-- THÊM MỚI (Icon loading)
+} from "lucide-react";
 
 /* -------------------- ANIMATIONS -------------------- */
+// (Giữ nguyên)
 const EASE: readonly [number, number, number, number] = [0.16, 1, 0.3, 1];
 const pageV: Variants = {
   initial: { opacity: 0 },
@@ -19,6 +28,45 @@ const itemV: Variants = {
    PAGE COMPONENT
 ======================================================= */
 export default function BieuQuyetPage() {
+  // --- THÊM STATE VÀ ROUTER ---
+  const router = useRouter();
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // --- HÀM GỬI FORM BẰNG JAVASCRIPT (THEO CHUẨN MỚI CỦA NETLIFY) ---
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault(); // Ngăn trình duyệt tự submit
+    setSubmitting(true);
+    setError(null);
+
+    const formData = new FormData(event.currentTarget);
+
+    try {
+      // 1. Mã hóa dữ liệu form
+      const encodedData = new URLSearchParams(formData as any).toString();
+
+      // 2. Gửi dữ liệu bằng 'fetch'
+      const response = await fetch("/", {
+        // Gửi đến trang chủ (Netlify sẽ bắt)
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: encodedData,
+      });
+
+      if (response.ok) {
+        // 3. Nếu OK, chuyển hướng đến trang 'success'
+        router.push("/bieu-quyet/success");
+      } else {
+        throw new Error("Có lỗi xảy ra khi gửi form. Vui lòng thử lại.");
+      }
+    } catch (err) {
+      console.error(err);
+      setError((err as Error).message);
+      setSubmitting(false);
+    }
+  };
+  // --- KẾT THÚC HÀM MỚI ---
+
   return (
     <motion.div
       variants={pageV}
@@ -26,8 +74,9 @@ export default function BieuQuyetPage() {
       animate="animate"
       className="min-h-screen bg-[rgb(248_250_252)]"
     >
-      {/* 1. HEADER */}
+      {/* Header (Giữ nguyên) */}
       <header className="border-b border-slate-200 bg-white/70 backdrop-blur">
+        {/* ... (Code header giữ nguyên) ... */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
             Biểu quyết Văn kiện Đại hội
@@ -38,29 +87,34 @@ export default function BieuQuyetPage() {
         </div>
       </header>
 
-      {/* 2. BODY */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/*
+         * --- THAY ĐỔI THẺ FORM ---
+         * 1. Xóa: method="POST"
+         * 2. Xóa: action="..."
+         * 3. Giữ: data-netlify="true" (vẫn cần thiết)
+         * 4. Thêm: onSubmit={handleSubmit}
+         */}
         <motion.form
-          name="bieu-quyet-van-kien-xii"
-          method="POST"
-          action="/bieuquyet/success"
-          data-netlify="true"
+          name="bieu-quyet-van-kien-xii" // Giữ nguyên tên form
+          data-netlify="true" // Giữ nguyên
+          onSubmit={handleSubmit} // Thêm mới
           variants={itemV}
-          className="rounded-2xl bg-white border border-slate-200 shadow-sm p-4 sm:p-6" // Padding nhỏ hơn trên mobile
+          className="rounded-2xl bg-white border border-slate-200 shadow-sm p-4 sm:p-6"
         >
-          {/* Trường ẩn bắt buộc của Netlify */}
+          {/* Trường ẩn (Giữ nguyên) */}
           <input
             type="hidden"
             name="form-name"
             value="bieu-quyet-van-kien-xii"
           />
 
-          {/* --- THÔNG TIN ĐẠI BIỂU --- */}
+          {/* Thông tin đại biểu (Giữ nguyên) */}
           <h2 className="text-xl font-semibold text-slate-900 mb-4">
             Thông tin Đại biểu
           </h2>
-          {/* Phần này đã responsive sẵn với 'sm:grid-cols-2' */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* ... (Các component Field giữ nguyên) ... */}
             <Field
               label="Họ và tên"
               icon={<UserRound className="h-4 w-4" />}
@@ -71,6 +125,7 @@ export default function BieuQuyetPage() {
                 name="fullname"
                 placeholder="VD: Nguyễn Văn A"
                 required
+                disabled={submitting} // Thêm
               />
             </Field>
             <Field label="MSSV" icon={<IdCard className="h-4 w-4" />} required>
@@ -79,6 +134,7 @@ export default function BieuQuyetPage() {
                 name="studentId"
                 placeholder="VD: 2212345"
                 required
+                disabled={submitting} // Thêm
               />
             </Field>
             <Field label="Email" icon={<Mail className="h-4 w-4" />} required>
@@ -88,6 +144,7 @@ export default function BieuQuyetPage() {
                 type="email"
                 placeholder="you@hcmute.edu.vn"
                 required
+                disabled={submitting} // Thêm
               />
             </Field>
             <Field
@@ -100,13 +157,14 @@ export default function BieuQuyetPage() {
                 name="unit"
                 placeholder="VD: Khoa CNTT"
                 required
+                disabled={submitting} // Thêm
               />
             </Field>
           </div>
 
           <hr className="my-6 border-slate-200" />
 
-          {/* --- NỘI DUNG BIỂU QUYẾT --- */}
+          {/* Nội dung biểu quyết (Giữ nguyên) */}
           <h2 className="text-xl font-semibold text-slate-900 mb-1">
             Nội dung Biểu Quyết
           </h2>
@@ -114,21 +172,42 @@ export default function BieuQuyetPage() {
             Vui lòng cho ý kiến về các nội dung dự thảo văn kiện.
           </p>
 
-          {/* Component Bảng Biểu Quyết (ĐÃ RESPONSIVE) */}
-          <VoteTable />
+          {/* Component Bảng Biểu Quyết (Giữ nguyên) */}
+          <fieldset disabled={submitting}>
+            {" "}
+            {/* Thêm: Vô hiệu hóa toàn bộ bảng khi đang gửi */}
+            <VoteTable />
+          </fieldset>
 
-          {/* --- SUBMIT --- */}
+          {/* --- SUBMIT VÀ THÔNG BÁO LỖI --- */}
           <div className="mt-6">
             <button
               type="submit"
+              disabled={submitting} // Thêm
               className="inline-flex items-center rounded-xl bg-slate-900 px-5 py-2.5 font-semibold text-white shadow hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
             >
-              <CheckSquare className="h-4 w-4 mr-2" />
-              Gửi Biểu Quyết
+              {submitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Đang gửi...
+                </>
+              ) : (
+                <>
+                  <CheckSquare className="h-4 w-4 mr-2" />
+                  Gửi Biểu Quyết
+                </>
+              )}
             </button>
+
+            {/* Thông báo lỗi nếu có */}
+            {error && (
+              <div className="mt-4 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-3">
+                <strong>Lỗi:</strong> {error}
+              </div>
+            )}
           </div>
 
-          {/* Định nghĩa style nội bộ (Giữ nguyên) */}
+          {/* Style (Giữ nguyên) */}
           <style jsx global>{`
             .Label {
               @apply block text-sm font-medium text-slate-800 mb-1;
@@ -144,12 +223,12 @@ export default function BieuQuyetPage() {
 }
 
 /* =======================================================
-   COMPONENT BẢNG BIỂU QUYẾT (RESPONSIVE)
+   CÁC COMPONENT CON (Giữ nguyên toàn bộ)
 ======================================================= */
 function VoteTable() {
+  // ... (Toàn bộ code của VoteTable giữ nguyên)
   return (
     <div className="rounded-lg border border-slate-200 overflow-hidden">
-      {/* Bỏ overflow-x-auto và min-w */}
       <div className="">
         {/* --- HEADER CỦA BẢNG (Chỉ hiện trên Desktop) --- */}
         <div className="hidden lg:grid grid-cols-12 gap-4 bg-slate-50 border-b border-slate-200 px-4 py-3 sticky top-0 z-10">
@@ -159,7 +238,6 @@ function VoteTable() {
           <div className="col-span-8 text-sm font-semibold text-slate-600">
             Nội dung
           </div>
-          {/* Các cột lựa chọn */}
           <div className="col-span-1 text-center text-sm font-semibold text-green-700">
             Đồng ý
           </div>
@@ -173,17 +251,12 @@ function VoteTable() {
 
         {/* --- BODY CỦA BẢNG (TẤT CẢ CÁC MỤC) --- */}
         <div className="divide-y divide-slate-200">
-          {/* Tất cả nội dung được lấy từ file DOCX
-           Các component VoteRow, VoteSectionHeader... đã được
-           cập nhật responsive
-          */}
-
           {/* --- PHẦN THỨ NHẤT --- */}
           <VoteSectionHeader title="PHẦN THỨ NHẤT: KẾT QUẢ THỰC HIỆN NGHỊ QUYẾT ĐẠI HỘI XI, NHIỆM KỲ 2023 - 2025" />
           <VoteGroupHeader title="I. Nhận định chung" />
           <VoteRow stt="1" label="Thuận lợi" name="P1-I-1-ThuanLoi" />
           <VoteRow stt="2" label="Khó khăn" name="P1-I-2-KhoKhan" />
-
+          {/* ... (Toàn bộ các VoteRow, VoteGroupHeader, VoteSectionHeader khác) ... */}
           <VoteGroupHeader title="II. KẾT QUẢ THỰC HIỆN PHONG TRÀO SV5T, CHƯƠNG TRÌNH TƯ VẤN, ĐỒNG HÀNH, HỖ TRỢ SINH VIÊN, CHƯƠNG TRÌNH XÂY DỰNG HỘI SVVN VỮNG MẠNH" />
           <VoteSubGroupHeader title="1. Phong trào “Sinh viên 5 tốt”" />
           <VoteRow
@@ -405,41 +478,28 @@ function VoteTable() {
   );
 }
 
-/* =======================================================
-   CÁC COMPONENT CON (RESPONSIVE)
-======================================================= */
-
-// --- Component Hàng Tiêu đề Phần (Responsive) ---
+// ... (Toàn bộ code của VoteRow, VoteSectionHeader, Field... giữ nguyên) ...
 function VoteSectionHeader({ title }: { title: string }) {
   return (
-    // Bỏ grid, dùng padding
     <div className="bg-blue-50 border-y border-blue-200 px-4 py-3">
       <div className="text-sm font-bold uppercase text-blue-800">{title}</div>
     </div>
   );
 }
-
-// --- Component Hàng Tiêu đề Nhóm (Responsive) ---
 function VoteGroupHeader({ title }: { title: string }) {
   return (
-    // Bỏ grid, dùng padding
     <div className="bg-slate-50/50 px-4 py-3">
       <div className="text-sm font-semibold text-slate-800">{title}</div>
     </div>
   );
 }
-
-// --- Component Hàng Tiêu đề Nhóm Con (Responsive) ---
 function VoteSubGroupHeader({ title }: { title: string }) {
   return (
-    // Bỏ grid, dùng padding, giữ thụt lề
     <div className="px-4 py-3">
       <div className="text-sm font-semibold text-slate-700 pl-4">{title}</div>
     </div>
   );
 }
-
-// --- Component Hàng Biểu Quyết (Responsive) ---
 function VoteRow({
   stt,
   label,
@@ -452,7 +512,6 @@ function VoteRow({
   indent?: number;
 }) {
   const idBase = `id-${name}`;
-  // Thêm 'lg:' để thụt lề chỉ trên desktop
   const indentClass = [
     "lg:pl-4", // indent 0
     "lg:pl-8", // indent 1
@@ -460,41 +519,28 @@ function VoteRow({
   ];
 
   return (
-    // Trên Mobile: grid-cols-1 (Nội dung và Lựa chọn xếp chồng)
-    // Trên Desktop: grid-cols-12 (layout bảng)
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-4 px-4 py-3 hover:bg-slate-50/70 transition-colors duration-150">
-      {/* STT (Chỉ hiện trên Desktop) */}
       <div className="hidden lg:block col-span-1 text-sm text-slate-500 font-medium pt-0.5">
         {stt}
       </div>
-
-      {/* Nội dung (Label) */}
-      {/* Mobile: col-span-1. Desktop: col-span-8 */}
       <div className={`col-span-1 lg:col-span-8 ${indentClass[indent]}`}>
         <label
           htmlFor={`${idBase}-dongy`}
           className="text-sm text-slate-800 cursor-pointer"
         >
-          {/* Hiện STT trên mobile */}
           <span className="font-medium text-slate-500 lg:hidden mr-2">
             {stt}.
           </span>
           {label}
         </label>
       </div>
-
-      {/* 3 Lựa chọn */}
-      {/* Mobile: col-span-1. Desktop: col-span-3 */}
       <div className="col-span-1 lg:col-span-3">
-        {/* Mobile: flex, cách đều. Desktop: grid 3 cột */}
         <div className="flex lg:grid lg:grid-cols-3 justify-around lg:justify-center gap-x-4 mt-2 lg:mt-0 lg:pl-0">
-          {/* Option 1: Đồng ý */}
           <div className="text-center">
             <label
               htmlFor={`${idBase}-dongy`}
               className="flex flex-col items-center gap-1 cursor-pointer"
             >
-              {/* Text label (chỉ hiện trên mobile) */}
               <span className="text-sm text-green-700 lg:hidden">Đồng ý</span>
               <input
                 type="radio"
@@ -506,8 +552,6 @@ function VoteRow({
               />
             </label>
           </div>
-
-          {/* Option 2: Không đồng ý */}
           <div className="text-center">
             <label
               htmlFor={`${idBase}-khong`}
@@ -525,8 +569,6 @@ function VoteRow({
               />
             </label>
           </div>
-
-          {/* Option 3: Khác */}
           <div className="text-center">
             <label
               htmlFor={`${idBase}-khac`}
@@ -537,7 +579,7 @@ function VoteRow({
                 type="radio"
                 name={name}
                 value="Khac"
-                id={`${idBase}-khac`} // Sửa lỗi chính tả
+                id={`${idBase}-khac`}
                 className="h-4 w-4 text-yellow-600 focus:ring-yellow-500"
               />
             </label>
@@ -547,10 +589,6 @@ function VoteRow({
     </div>
   );
 }
-
-/* =======================================================
-   Component 'Field' (Giữ nguyên)
-======================================================= */
 function Field({
   label,
   icon,
@@ -571,7 +609,7 @@ function Field({
       </label>
       <div className="relative">
         {icon && (
-          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-12 text-slate-400">
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
             {icon}
           </span>
         )}
