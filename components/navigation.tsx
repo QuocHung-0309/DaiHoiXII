@@ -15,8 +15,8 @@ export function Navigation() {
   const publicLinks = [
     { href: "/", label: "Trang chủ" },
     { href: "/documents", label: "Văn kiện" },
-    { href: "/gopy-van-kien", label: "Góp ý văn kiện" },
-    { href: "/delegates", label: "Đại biểu" },
+    { href: "/bieuquyet", label: "Biểu quyết" },
+    // { href: "/delegates", label: "Đại biểu" },
   ];
 
   const adminLinks = [
