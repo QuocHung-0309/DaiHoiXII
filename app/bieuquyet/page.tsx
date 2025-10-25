@@ -95,7 +95,7 @@ export default function BieuQuyetPage() {
          */}
         <motion.form
           name="bieu-quyet-van-kien-xii" // Giữ nguyên tên form
-          data-netlify="true" // Giữ nguyên
+          //data-netlify="true" // Giữ nguyên
           onSubmit={handleSubmit} // Thêm mới
           variants={itemV}
           className="rounded-2xl bg-white border border-slate-200 shadow-sm p-4 sm:p-6"
