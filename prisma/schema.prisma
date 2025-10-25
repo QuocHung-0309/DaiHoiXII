@@ -1,53 +1,9 @@
-generator client {
-  provider = "prisma-client-js"
-}
-
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-model Feedback {
-  id             String   @id @default(cuid())
-  fullname       String
-  studentId      String
-  email          String
-  unit           String
-  content        String
-  consent        Boolean  @default(false)
-
-  // LƯU CỨNG meta văn kiện, KHÔNG quan hệ:
-  documentCode   String
-  documentTitle  String
-
-  fileUrl        String?
-  tag            String?
-
-  ip             String?
-  ua             String?
-
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"] // cho Netlify functions
 }
-
-model Vote {
-  id         String     @id @default(cuid())
-  documentId String
-  choice     VoteChoice
-  mssv       String?    // nếu ràng buộc 1 người 1 phiếu => KHÔNG được null khi ghi
-  unit       String?
-  ip         String?
-  ua         String?
-  createdAt  DateTime   @default(now())
-
-  @@index([documentId])
-  @@index([mssv])
-  @@unique([documentId, mssv]) // ← khóa duy nhất 1 MSSV/1 văn kiện
-}
-
-enum VoteChoice {
-  AGREE
-  DISAGREE
-  ABSTAIN
-}
-
