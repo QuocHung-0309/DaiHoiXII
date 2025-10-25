@@ -20,9 +20,7 @@ export function Navigation() {
   ];
 
   const adminLinks = [
-    { href: "/admin/seating", label: "Sơ đồ chỗ ngồi" },
-    { href: "/admin/voting-results", label: "Thống kê biểu quyết" },
-    { href: "/admin/feedback-results", label: "Thống kê góp ý" },
+    { href: "/admin/bieuquyet-ketqua", label: "Thống kê biểu quyết" },
   ];
 
   const links = isAdmin ? adminLinks : publicLinks;

@@ -76,7 +76,6 @@ export default function BieuQuyetPage() {
     >
       {/* Header (Giữ nguyên) */}
       <header className="border-b border-slate-200 bg-white/70 backdrop-blur">
-        {/* ... (Code header giữ nguyên) ... */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
             Biểu quyết Văn kiện Đại hội
@@ -114,7 +113,7 @@ export default function BieuQuyetPage() {
             Thông tin Đại biểu
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* ... (Các component Field giữ nguyên) ... */}
+            {/* Thêm 'disabled' vào các input */}
             <Field
               label="Họ và tên"
               icon={<UserRound className="h-4 w-4" />}
@@ -125,7 +124,7 @@ export default function BieuQuyetPage() {
                 name="fullname"
                 placeholder="VD: Nguyễn Văn A"
                 required
-                disabled={submitting} // Thêm
+                disabled={submitting}
               />
             </Field>
             <Field label="MSSV" icon={<IdCard className="h-4 w-4" />} required>
@@ -134,7 +133,7 @@ export default function BieuQuyetPage() {
                 name="studentId"
                 placeholder="VD: 2212345"
                 required
-                disabled={submitting} // Thêm
+                disabled={submitting}
               />
             </Field>
             <Field label="Email" icon={<Mail className="h-4 w-4" />} required>
@@ -144,7 +143,7 @@ export default function BieuQuyetPage() {
                 type="email"
                 placeholder="you@hcmute.edu.vn"
                 required
-                disabled={submitting} // Thêm
+                disabled={submitting}
               />
             </Field>
             <Field
@@ -157,7 +156,7 @@ export default function BieuQuyetPage() {
                 name="unit"
                 placeholder="VD: Khoa CNTT"
                 required
-                disabled={submitting} // Thêm
+                disabled={submitting}
               />
             </Field>
           </div>
@@ -172,10 +171,8 @@ export default function BieuQuyetPage() {
             Vui lòng cho ý kiến về các nội dung dự thảo văn kiện.
           </p>
 
-          {/* Component Bảng Biểu Quyết (Giữ nguyên) */}
+          {/* Thêm: Vô hiệu hóa toàn bộ bảng khi đang gửi */}
           <fieldset disabled={submitting}>
-            {" "}
-            {/* Thêm: Vô hiệu hóa toàn bộ bảng khi đang gửi */}
             <VoteTable />
           </fieldset>
 
@@ -183,7 +180,7 @@ export default function BieuQuyetPage() {
           <div className="mt-6">
             <button
               type="submit"
-              disabled={submitting} // Thêm
+              disabled={submitting}
               className="inline-flex items-center rounded-xl bg-slate-900 px-5 py-2.5 font-semibold text-white shadow hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-70"
             >
               {submitting ? (
@@ -223,10 +220,9 @@ export default function BieuQuyetPage() {
 }
 
 /* =======================================================
-   CÁC COMPONENT CON (Giữ nguyên toàn bộ)
+   CÁC COMPONENT CON (Giữ nguyên, đã bao gồm sửa lỗi typo)
 ======================================================= */
 function VoteTable() {
-  // ... (Toàn bộ code của VoteTable giữ nguyên)
   return (
     <div className="rounded-lg border border-slate-200 overflow-hidden">
       <div className="">
@@ -256,7 +252,6 @@ function VoteTable() {
           <VoteGroupHeader title="I. Nhận định chung" />
           <VoteRow stt="1" label="Thuận lợi" name="P1-I-1-ThuanLoi" />
           <VoteRow stt="2" label="Khó khăn" name="P1-I-2-KhoKhan" />
-          {/* ... (Toàn bộ các VoteRow, VoteGroupHeader, VoteSectionHeader khác) ... */}
           <VoteGroupHeader title="II. KẾT QUẢ THỰC HIỆN PHONG TRÀO SV5T, CHƯƠNG TRÌNH TƯ VẤN, ĐỒNG HÀNH, HỖ TRỢ SINH VIÊN, CHƯƠNG TRÌNH XÂY DỰNG HỘI SVVN VỮNG MẠNH" />
           <VoteSubGroupHeader title="1. Phong trào “Sinh viên 5 tốt”" />
           <VoteRow
@@ -478,7 +473,6 @@ function VoteTable() {
   );
 }
 
-// ... (Toàn bộ code của VoteRow, VoteSectionHeader, Field... giữ nguyên) ...
 function VoteSectionHeader({ title }: { title: string }) {
   return (
     <div className="bg-blue-50 border-y border-blue-200 px-4 py-3">
@@ -500,6 +494,8 @@ function VoteSubGroupHeader({ title }: { title: string }) {
     </div>
   );
 }
+
+// --- Component Hàng Biểu Quyết (Đã sửa lỗi typo) ---
 function VoteRow({
   stt,
   label,
@@ -569,6 +565,7 @@ function VoteRow({
               />
             </label>
           </div>
+          {/* Option 3: Khác (ĐÃ SỬA LỖI) */}
           <div className="text-center">
             <label
               htmlFor={`${idBase}-khac`}
@@ -589,6 +586,7 @@ function VoteRow({
     </div>
   );
 }
+
 function Field({
   label,
   icon,
