@@ -77,17 +77,9 @@ export default function HomePage() {
       icon: Vote,
       title: "Biểu quyết",
       description: "Tham gia biểu quyết các văn kiện và nghị quyết",
-      href: "/documents",
+      href: "/bieuquyet",
       gradient:
         "bg-gradient-to-br from-[var(--secondary)] via-[#FF9A1A] to-[var(--accent)]",
-    },
-    {
-      icon: Users,
-      title: "Đoàn đại biểu",
-      description: "Thông tin về các đoàn và đại biểu tham dự",
-      href: "/delegates",
-      gradient:
-        "bg-gradient-to-br from-[var(--accent)] via-[#FFD36C] to-[#FFE8A8]",
     },
   ];
 
@@ -150,7 +142,7 @@ export default function HomePage() {
             className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold tracking-wide uppercase bg-white/15 px-3 py-1 rounded-full backdrop-blur"
             variants={itemVariants}
           >
-            <Megaphone size={18} /> Chào mừng đại biểu
+            <Megaphone size={18} /> Chào mừng
           </motion.span>
 
           {/* title block đẹp hơn */}
@@ -165,7 +157,7 @@ export default function HomePage() {
               className="block text-transparent bg-clip-text"
               style={{ backgroundImage: "linear-gradient(90deg,#FFF,#E3F6FF)" }}
             >
-              Trường Đại học Sư phạm Kỹ thuật TP. Hồ Chí Minh
+              TRƯỜNG ĐẠI HỌC SƯ PHẠM KỸ THUẬT TP.HCM
             </span>
           </motion.h1>
 
@@ -323,117 +315,16 @@ export default function HomePage() {
                     </div>
                   </Link>
                 </motion.div>
-                <motion.div variants={itemVariants}>
-                  <Link
-                    href="/delegates"
-                    className="block rounded-xl p-4 border bg-gradient-to-r from-[var(--secondary)] to-[#FFC36C] text-[color:var(--secondary-foreground)] hover:shadow-lg transition"
-                  >
-                    <div className="font-bold">Danh sách Đoàn – Đại biểu →</div>
-                    <div className="text-sm/relaxed opacity-90">
-                      Tra cứu theo đơn vị/cụm
-                    </div>
-                  </Link>
-                </motion.div>
+              
               </div>
             </div>
           </motion.div>
         </div>
       </motion.section>
       {/* ====== TIMELINE ====== */}
-      <motion.div variants={sectionVariants}>
-        <JourneyTimeline
-          subtitle="Nhìn lại các cột mốc nổi bật của phong trào Sinh viên & công tác Hội."
-          items={[
-            {
-              year: "2025",
-              title: "Top 3 phong trào cấp Trường",
-              desc: "Triển khai chiến dịch Mùa hè xanh – Chủ nhật Xanh với hơn 1.200 lượt tham gia.",
-              icon: "trophy",
-              colorFrom: "#22C55E",
-              colorTo: "#A3E635",
-            },
-            {
-              year: "2024",
-              title: "Kết nối doanh nghiệp",
-              desc: "Tổ chức 8 workshop nghề nghiệp, 3 job-fair mini; 450+ cơ hội thực tập.",
-              icon: "users",
-              colorFrom: "#0EA5E9",
-              colorTo: "#22D3EE",
-            },
-            {
-              year: "2023",
-              title: "Số hóa quy trình Hội",
-              desc: "Thí điểm check-in QR và biểu quyết trực tuyến; rút ngắn 40% thời gian điều hành.",
-              icon: "rocket",
-              colorFrom: "#F97316",
-              colorTo: "#F59E0B",
-            },
-            {
-              year: "2022",
-              title: "Thành tích cấp TP",
-              desc: "Đạt 15+ danh hiệu SV5T; 2 CLB đạt giải phong trào xuất sắc.",
-              icon: "medal",
-              colorFrom: "#8B5CF6",
-              colorTo: "#06B6D4",
-            },
-          ]}
-        />
-      </motion.div>
       <HomeNews />
       {/* ====== FEATURES ====== */}
-      <motion.section className="py-16 flex-1" variants={sectionVariants}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.h2
-            className="text-3xl font-bold text-center mb-12"
-            variants={itemVariants}
-          >
-            Chức năng chính
-          </motion.h2>
 
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-3 gap-6"
-            initial="initial"
-            animate="animate"
-            variants={{
-              initial: {},
-              animate: { transition: { staggerChildren: 0.06 } },
-            }}
-          >
-            {features.map((f) => {
-              const Icon = f.icon;
-              return (
-                <motion.div
-                  key={f.href}
-                  variants={itemVariants}
-                  whileHover={{
-                    y: -4,
-                    boxShadow: "0px 12px 30px rgba(2,132,199,0.12)",
-                  }}
-                  transition={{ type: "spring", stiffness: 260, damping: 18 }}
-                >
-                  <Link
-                    href={f.href}
-                    className="group bg-white border border-gray-200 rounded-2xl p-6 block"
-                    aria-label={f.title}
-                  >
-                    <div
-                      className={`${f.gradient} w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow`}
-                    >
-                      <Icon className="text-white" size={24} />
-                    </div>
-                    <h3 className="text-xl font-bold mb-2 text-gray-900">
-                      {f.title}
-                    </h3>
-                    <p className="text-gray-600 text-sm leading-relaxed">
-                      {f.description}
-                    </p>
-                  </Link>
-                </motion.div>
-              );
-            })}
-          </motion.div>
-        </div>
-      </motion.section>
       {/* ====== QUICK STATS ====== */}
       <motion.section
         className="bg-white/70 backdrop-blur py-12 border-t"
@@ -453,13 +344,13 @@ export default function HomePage() {
               {
                 color: "text-[color:var(--primary)]",
                 bg: "from-[#E6F7FF] via-white to-[#FDF6E9]",
-                val: 147,
+                val: 150,
                 label: "Đại biểu",
               },
               {
                 color: "text-[color:var(--secondary)]",
                 bg: "from-[#FFF1E6] via-white to-[#FFF9E6]",
-                val: 12,
+                val: 1,
                 label: "Văn kiện",
               },
               {
@@ -490,7 +381,6 @@ export default function HomePage() {
         </div>
       </motion.section>
       <div className="sr-only" aria-live="polite">
-        {/* screen-reader announce copy thành công (nếu cần nâng cấp) */}
         <CheckCircle2 />
       </div>
     </motion.div>

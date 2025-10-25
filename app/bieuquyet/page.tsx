@@ -11,7 +11,9 @@ import {
   CheckSquare,
   Loader2,
 } from "lucide-react";
-export const dynamic = "force-dynamic";
+// Bỏ dòng này đi vì đã dùng Function, không cần ép dynamic nữa
+// export const dynamic = 'force-dynamic';
+
 /* -------------------- ANIMATIONS -------------------- */
 const EASE: readonly [number, number, number, number] = [0.16, 1, 0.3, 1];
 const pageV: Variants = {
@@ -27,44 +29,45 @@ const itemV: Variants = {
    PAGE COMPONENT
 ======================================================= */
 export default function BieuQuyetPage() {
-  // --- THÊM STATE VÀ ROUTER ---
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // --- HÀM GỬI FORM BẰNG JAVASCRIPT (THEO CHUẨN MỚI CỦA NETLIFY) ---
+  // --- HÀM GỬI FORM (Gọi Netlify Function) ---
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault(); // Ngăn trình duyệt tự submit
+    event.preventDefault();
     setSubmitting(true);
     setError(null);
 
     const formData = new FormData(event.currentTarget);
+    const encodedData = new URLSearchParams(formData as any).toString();
 
     try {
-      // 1. Mã hóa dữ liệu form
-      const encodedData = new URLSearchParams(formData as any).toString();
-
-      // 2. Gửi dữ liệu bằng 'fetch'
-      const response = await fetch("/", {
-        // Gửi đến trang chủ (Netlify sẽ bắt)
+      // Gọi Netlify Function đã tạo
+      const response = await fetch("/.netlify/functions/submit-form", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: encodedData,
       });
 
       if (response.ok) {
-        // 3. Nếu OK, chuyển hướng đến trang 'success'
+        // Nếu Function trả về OK, chuyển hướng
         router.push("/bieu-quyet/success");
       } else {
-        throw new Error("Có lỗi xảy ra khi gửi form. Vui lòng thử lại.");
+        // Nếu Function trả về lỗi, hiển thị lỗi
+        const errorText = await response.text();
+        console.error("Function error response:", errorText);
+        throw new Error(
+          `Lỗi từ server: ${errorText || response.statusText || "Không rõ lỗi"}`
+        );
       }
     } catch (err) {
-      console.error(err);
+      console.error("Submit error:", err);
       setError((err as Error).message);
-      setSubmitting(false);
+      setSubmitting(false); // Chỉ set submitting false khi có lỗi
     }
+    // Không cần finally nữa vì router.push sẽ chuyển trang nếu thành công
   };
-  // --- KẾT THÚC HÀM MỚI ---
 
   return (
     <motion.div
@@ -73,7 +76,7 @@ export default function BieuQuyetPage() {
       animate="animate"
       className="min-h-screen bg-[rgb(248_250_252)]"
     >
-      {/* Header (Giữ nguyên) */}
+      {/* Header */}
       <header className="border-b border-slate-200 bg-white/70 backdrop-blur">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
@@ -86,33 +89,25 @@ export default function BieuQuyetPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/*
-         * --- THAY ĐỔI THẺ FORM ---
-         * 1. Xóa: method="POST"
-         * 2. Xóa: action="..."
-         * 3. Giữ: data-netlify="true" (vẫn cần thiết)
-         * 4. Thêm: onSubmit={handleSubmit}
-         */}
         <motion.form
-          name="bieu-quyet-van-kien-xii" // Giữ nguyên tên form
-          data-netlify="true" // Giữ nguyên
-          onSubmit={handleSubmit} // Thêm mới
+          name="bieu-quyet-van-kien-xii" // Giữ tên form để function biết
+          // data-netlify="true" // <-- ĐÃ XÓA DÒNG NÀY
+          onSubmit={handleSubmit} // Dùng hàm mới
           variants={itemV}
           className="rounded-2xl bg-white border border-slate-200 shadow-sm p-4 sm:p-6"
         >
-          {/* Trường ẩn (Giữ nguyên) */}
+          {/* Trường ẩn (Vẫn cần giữ để Function biết gửi form nào) */}
           <input
             type="hidden"
             name="form-name"
             value="bieu-quyet-van-kien-xii"
           />
 
-          {/* Thông tin đại biểu (Giữ nguyên) */}
+          {/* Thông tin đại biểu */}
           <h2 className="text-xl font-semibold text-slate-900 mb-4">
             Thông tin Đại biểu
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Thêm 'disabled' vào các input */}
             <Field
               label="Họ và tên"
               icon={<UserRound className="h-4 w-4" />}
@@ -162,15 +157,13 @@ export default function BieuQuyetPage() {
 
           <hr className="my-6 border-slate-200" />
 
-          {/* Nội dung biểu quyết (Giữ nguyên) */}
+          {/* Nội dung biểu quyết */}
           <h2 className="text-xl font-semibold text-slate-900 mb-1">
             Nội dung Biểu Quyết
           </h2>
           <p className="text-sm text-slate-600 mb-4">
             Vui lòng cho ý kiến về các nội dung dự thảo văn kiện.
           </p>
-
-          {/* Thêm: Vô hiệu hóa toàn bộ bảng khi đang gửi */}
           <fieldset disabled={submitting}>
             <VoteTable />
           </fieldset>
@@ -194,8 +187,6 @@ export default function BieuQuyetPage() {
                 </>
               )}
             </button>
-
-            {/* Thông báo lỗi nếu có */}
             {error && (
               <div className="mt-4 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-3">
                 <strong>Lỗi:</strong> {error}
@@ -203,7 +194,7 @@ export default function BieuQuyetPage() {
             )}
           </div>
 
-          {/* Style (Giữ nguyên) */}
+          {/* Style */}
           <style jsx global>{`
             .Label {
               @apply block text-sm font-medium text-slate-800 mb-1;
@@ -219,7 +210,7 @@ export default function BieuQuyetPage() {
 }
 
 /* =======================================================
-   CÁC COMPONENT CON
+   CÁC COMPONENT CON (VoteTable, VoteRow, Field...)
 ======================================================= */
 function VoteTable() {
   return (
@@ -498,7 +489,7 @@ function VoteSubGroupHeader({ title }: { title: string }) {
   );
 }
 
-// --- Component Hàng Biểu Quyết (Đã sửa lỗi typo) ---
+// --- Component Hàng Biểu Quyết (Responsive) ---
 function VoteRow({
   stt,
   label,

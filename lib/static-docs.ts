@@ -1,47 +1,114 @@
-// Tất cả meta của văn kiện để dùng chung cho Góp ý + Biểu quyết + Hiển thị
+// File: lib/static-docs.ts
+
+// Định nghĩa kiểu trạng thái (Giữ nguyên từ code của bạn)
 export type DocStatus = "voting" | "pending" | "completed";
 
-export type DocMeta = {
-  id: string;               // "1" | "2" ...
-  title: string;
-  category: string;         // "Báo cáo" | "Nghị quyết" ...
-  status: DocStatus;
-  deadline?: string;        // ISO hoặc "YYYY-MM-DD"
-  description?: string;
-  // Dùng cho trang chi tiết:
-  content?: string;         // markdown / plain text
-  attachments?: { name: string; size?: string; url?: string }[];
+export type Attachment = {
+  name: string; // Tên hiển thị của file
+  url: string; // Đường dẫn tới file trong thư mục public
+  // size?: string; // (Tùy chọn) Kích thước file
+};
+// Định nghĩa kiểu dữ liệu cho một văn kiện
+export type DocumentCompact = {
+  id: string; // Mã định danh duy nhất (ví dụ: tên file rút gọn)
+  title: string; // Tiêu đề hiển thị
+  description?: string; // Mô tả ngắn (tùy chọn)
+  category: string; // Loại văn kiện (ví dụ: Báo cáo, Đề án, ...)
+  status: DocStatus; // Trạng thái hiện tại
+  deadline?: string; // Hạn biểu quyết (ISO 8601 format: YYYY-MM-DDTHH:mm:ssZ) - tùy chọn
+  attachments?: Attachment[]; // ✨ THÊM: Mảng các file đính kèm
+  content?: string; // ✨ THÊM: Nội dung Markdown (nếu có, ngoài PDF)
 };
 
-export const STATIC_DOCS: DocMeta[] = [
+// --- DANH SÁCH VĂN KIỆN ---
+// Thêm các file bạn đã tải lên vào đây
+const documents: DocumentCompact[] = [
   {
-    id: "1",
-    title: "Báo cáo tổng kết nhiệm kỳ 2022–2024",
-    category: "Báo cáo",
-    status: "voting",
-    deadline: "2024-03-20",
-    description: "Báo cáo tổng kết hoạt động của Hội sinh viên trong nhiệm kỳ 2022–2024",
-    content: `# PHẦN I: TỔNG QUAN ...`,
-    attachments: [{ name: "Bao_cao_chi_tiet.pdf", size: "2.5 MB" }],
+    id: "1", // Lấy từ tên file
+    title: "Văn kiện Đại hội XII", // Tên dễ hiểu hơn
+    description:
+      "Dự thảo tổng hợp các nội dung báo cáo chính trị, báo cáo kiểm điểm BCH khóa XI và phương hướng nhiệm kỳ XII.",
+    category: "Dự thảo Báo cáo",
+    status: "voting", // Đang cho biểu quyết
+    deadline: "12g00", // Ví dụ hạn cuối
+    attachments: [
+      {
+        name: "vkdh.pdf",
+        url: "/vkdh.pdf",
+      },
+    ],
   },
   {
     id: "2",
-    title: "Phương hướng hoạt động nhiệm kỳ 2024–2026",
-    category: "Nghị quyết",
-    status: "voting",
-    deadline: "2024-03-20",
-    description: "Phương hướng và kế hoạch hoạt động cho nhiệm kỳ mới",
-    content: `# PHƯƠNG HƯỚNG ...`,
-    attachments: [{ name: "Phuong_huong_chi_tiet.pdf", size: "1.8 MB" }],
+    title: "Đề án Ban Chấp hành Hội Sinh viên Khóa XII",
+    description: "Đề án về cơ cấu, tiêu chuẩn, số lượng Ban Chấp hành nhiệm kỳ 2025 - 2028.",
+    category: "Đề án Nhân sự",
+    status: "voting", // Đang cho biểu quyết
+    deadline: "12g00",
+    attachments: [
+      {
+        name: "da_bch.pdf",
+        url: "/da_bch.pdf",
+      },
+    ],
   },
-  // ...các văn kiện khác
+  {
+    id: "3",
+    title: "Danh sách trích ngang dự kiến Ban Chấp hành Khóa XII",
+    description: "Thông tin chi tiết về các nhân sự dự kiến giới thiệu ứng cử vào Ban Chấp hành.",
+    category: "Nhân sự Dự kiến",
+    status: "voting", // Sắp tới mới biểu quyết (ví dụ)
+    deadline: "12g00",
+    attachments: [
+      {
+        name: "dstn_bch.pdf",
+        url: "/dstn_bch.pdf",
+      },
+    ],
+  },
+  {
+    id: "4",
+    title: "Đề án Ban Kiểm tra Hội Sinh viên Khóa XII",
+    description: "Đề án về cơ cấu, tiêu chuẩn, số lượng Ban Kiểm tra nhiệm kỳ 2025 - 2028.",
+    category: "Đề án Nhân sự",
+    status: "voting",
+    deadline: "12g00",
+    attachments: [
+      {
+        name: "da_bkt.pdf",
+        url: "/da_bkt.pdf",
+      },
+    ],
+  },
+  {
+    id: "5",
+    title: "Danh sách trích ngang dự kiến Ban Kiểm tra Khóa XII",
+    description: "Thông tin chi tiết về các nhân sự dự kiến giới thiệu ứng cử vào Ban Kiểm tra.",
+    category: "Nhân sự Dự kiến",
+    status: "voting",
+    deadline: "12g00",
+    attachments: [
+      {
+        name: "dstn_bkt.pdf",
+        url: "/dstn_bkt.pdf",
+      },
+    ],
+  },
+  // --- Thêm các văn kiện khác nếu có ---
+  // {
+  //   id: "bao-cao-tong-ket-nhiem-ky-xi",
+  //   title: "Báo cáo Tổng kết Nhiệm kỳ XI",
+  //   description: "Báo cáo chi tiết kết quả công tác Hội và phong trào sinh viên nhiệm kỳ 2023-2025.",
+  //   category: "Báo cáo",
+  //   status: "completed", // Đã xong (ví dụ)
+  // },
 ];
 
-// Helpers tiện dùng
-export const DOC_MAP = new Map(STATIC_DOCS.map(d => [d.id, d]));
-export const getDoc = (id: string) => DOC_MAP.get(id);
-export const listCompact = () =>
-  STATIC_DOCS.map(d => ({
-    id: d.id, title: d.title, category: d.category,
-    status: d.status, deadline: d.deadline, description: d.description,
-  }));
+// Hàm để lấy danh sách (Giữ nguyên từ code của bạn)
+export function listCompact(): Omit<DocumentCompact, 'content' | 'attachments'>[] {
+  return documents.map(({ content, attachments, ...rest }) => rest);
+}
+
+export function getDoc(id: string): DocumentCompact | undefined {
+  return documents.find(doc => doc.id === id);
+}
