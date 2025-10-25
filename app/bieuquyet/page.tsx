@@ -11,7 +11,7 @@ import {
   CheckSquare,
   Loader2,
 } from "lucide-react";
-
+export const dynamic = "force-dynamic";
 /* -------------------- ANIMATIONS -------------------- */
 const EASE: readonly [number, number, number, number] = [0.16, 1, 0.3, 1];
 const pageV: Variants = {
