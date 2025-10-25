@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react"; // <-- THÊM MỚI
-import { useRouter } from "next/navigation"; // <-- THÊM MỚI
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion, type Variants } from "framer-motion";
 import {
   UserRound,
@@ -9,11 +9,10 @@ import {
   Mail,
   Building2,
   CheckSquare,
-  Loader2, // <-- THÊM MỚI (Icon loading)
+  Loader2,
 } from "lucide-react";
 
 /* -------------------- ANIMATIONS -------------------- */
-// (Giữ nguyên)
 const EASE: readonly [number, number, number, number] = [0.16, 1, 0.3, 1];
 const pageV: Variants = {
   initial: { opacity: 0 },
@@ -220,7 +219,7 @@ export default function BieuQuyetPage() {
 }
 
 /* =======================================================
-   CÁC COMPONENT CON (Giữ nguyên, đã bao gồm sửa lỗi typo)
+   CÁC COMPONENT CON
 ======================================================= */
 function VoteTable() {
   return (
@@ -472,7 +471,7 @@ function VoteTable() {
     </div>
   );
 }
-
+// --- Component Hàng Tiêu đề Phần (Responsive) ---
 function VoteSectionHeader({ title }: { title: string }) {
   return (
     <div className="bg-blue-50 border-y border-blue-200 px-4 py-3">
@@ -480,6 +479,8 @@ function VoteSectionHeader({ title }: { title: string }) {
     </div>
   );
 }
+
+// --- Component Hàng Tiêu đề Nhóm (Responsive) ---
 function VoteGroupHeader({ title }: { title: string }) {
   return (
     <div className="bg-slate-50/50 px-4 py-3">
@@ -487,6 +488,8 @@ function VoteGroupHeader({ title }: { title: string }) {
     </div>
   );
 }
+
+// --- Component Hàng Tiêu đề Nhóm Con (Responsive) ---
 function VoteSubGroupHeader({ title }: { title: string }) {
   return (
     <div className="px-4 py-3">
@@ -565,7 +568,6 @@ function VoteRow({
               />
             </label>
           </div>
-          {/* Option 3: Khác (ĐÃ SỬA LỖI) */}
           <div className="text-center">
             <label
               htmlFor={`${idBase}-khac`}
