@@ -247,22 +247,19 @@ export default function DocumentDetailPage({
             </div>
           )}
         </motion.div>
-        {/* ✨ SỬA: PDF Viewer - Dùng Aspect Ratio */}
+        {/* ✨ SỬA: PDF Viewer - Quay lại dùng Aspect Ratio */}
         {pdfUrl && (
           <motion.div variants={blockVariants} className="mt-8">
             <h2 className="text-xl font-semibold text-slate-900 mb-4">
               Nội dung Văn kiện
             </h2>
             {/* Sử dụng aspect-ratio (ví dụ: A4 ~ 210/297 ~ 7/10) */}
-            {/* Thêm class `relative` cho div cha nếu iframe dùng `absolute` */}
-            <div className="aspect-[7/10] bg-gray-100 rounded-lg shadow-sm border border-slate-300 overflow-hidden">
+            <div className="aspect-[7/10] bg-gray-100 rounded-lg shadow-sm border border-slate-300 overflow-hidden relative">
               {/* Hoặc dùng aspect-video nếu muốn tỷ lệ video */}
-              {/* <div className="aspect-video bg-gray-100 rounded-lg shadow-sm border border-slate-300 overflow-hidden"> */}
+              {/* <div className="aspect-video bg-gray-100 rounded-lg shadow-sm border border-slate-300 overflow-hidden relative"> */}
               <iframe
                 src={`${pdfUrl}#view=FitH`} // Vừa chiều ngang
                 title={`Nội dung ${doc.title}`}
-                // className="w-full h-full" // Mặc định của aspect-ratio
-                // Bỏ style height cố định
                 className="absolute inset-0 w-full h-full border-0" // Dùng absolute để fill div cha
                 allowFullScreen
               />
