@@ -52,7 +52,8 @@ export default function BieuQuyetPage() {
 
       if (response.ok) {
         // Nếu Function trả về OK, chuyển hướng
-        router.push("/bieuquyet/success");
+        // ✨ SỬA LẠI ĐƯỜNG DẪN SUCCESS CHO ĐÚNG ✨
+        router.push("/bieu-quyet/success"); // Đảm bảo đường dẫn này tồn tại
       } else {
         // Nếu Function trả về lỗi, hiển thị lỗi
         const errorText = await response.text();
@@ -89,19 +90,21 @@ export default function BieuQuyetPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* ======================= FORM BẮT ĐẦU TỪ ĐÂY ======================= */}
         <motion.form
-          name="bieu-quyet-van-kien-xii" // Giữ tên form để function biết
-          // data-netlify="true" // <-- ĐÃ XÓA DÒNG NÀY
-          onSubmit={handleSubmit} // Dùng hàm mới
+          name="bieu-quyet-van-kien-xii" // Tên này quan trọng cho Netlify Function
+          // data-netlify="true" // <-- ĐÃ XÓA KHI DÙNG FUNCTION
+          onSubmit={handleSubmit} // Gọi hàm JS khi submit
           variants={itemV}
           className="rounded-2xl bg-white border border-slate-200 shadow-sm p-4 sm:p-6"
         >
-          {/* Trường ẩn (Vẫn cần giữ để Function biết gửi form nào) */}
+          {/* ----- TRƯỜNG NÀY CỰC KỲ QUAN TRỌNG ----- */}
           <input
             type="hidden"
             name="form-name"
-            value="bieu-quyet-van-kien-xii"
+            value="bieu-quyet-van-kien-xii" // Phải khớp với thuộc tính 'name' của form
           />
+          {/* ----- HẾT TRƯỜNG QUAN TRỌNG ----- */}
 
           {/* Thông tin đại biểu */}
           <h2 className="text-xl font-semibold text-slate-900 mb-4">
@@ -165,7 +168,7 @@ export default function BieuQuyetPage() {
             Vui lòng cho ý kiến về các nội dung dự thảo văn kiện.
           </p>
           <fieldset disabled={submitting}>
-            <VoteTable />
+            <VoteTable /> {/* Component chứa bảng biểu quyết */}
           </fieldset>
 
           {/* --- SUBMIT VÀ THÔNG BÁO LỖI --- */}
@@ -204,6 +207,7 @@ export default function BieuQuyetPage() {
             }
           `}</style>
         </motion.form>
+        {/* ======================= FORM KẾT THÚC ======================= */}
       </main>
     </motion.div>
   );
@@ -212,11 +216,14 @@ export default function BieuQuyetPage() {
 /* =======================================================
    CÁC COMPONENT CON (VoteTable, VoteRow, Field...)
 ======================================================= */
+
+// --- Component Bảng Biểu Quyết ---
 function VoteTable() {
+  // Dữ liệu các mục biểu quyết (đã copy từ code bạn gửi trước đó)
   return (
     <div className="rounded-lg border border-slate-200 overflow-hidden">
       <div className="">
-        {/* --- HEADER CỦA BẢNG (Chỉ hiện trên Desktop) --- */}
+        {/* Header Bảng (Desktop) */}
         <div className="hidden lg:grid grid-cols-12 gap-4 bg-slate-50 border-b border-slate-200 px-4 py-3 sticky top-0 z-10">
           <div className="col-span-1 text-sm font-semibold text-slate-600">
             STT
@@ -235,9 +242,9 @@ function VoteTable() {
           </div>
         </div>
 
-        {/* --- BODY CỦA BẢNG (TẤT CẢ CÁC MỤC) --- */}
+        {/* Body Bảng */}
         <div className="divide-y divide-slate-200">
-          {/* --- PHẦN THỨ NHẤT --- */}
+          {/* Phần 1 */}
           <VoteSectionHeader title="PHẦN THỨ NHẤT: KẾT QUẢ THỰC HIỆN NGHỊ QUYẾT ĐẠI HỘI XI, NHIỆM KỲ 2023 - 2025" />
           <VoteGroupHeader title="I. Nhận định chung" />
           <VoteRow stt="1" label="Thuận lợi" name="P1-I-1-ThuanLoi" />
@@ -345,12 +352,11 @@ function VoteTable() {
             name="P1-III-DanhGiaChiTieu"
           />
 
-          {/* --- PHẦN THỨ HAI --- */}
+          {/* Phần 2 */}
           <VoteSectionHeader title="PHẦN THỨ HAI: MỤC TIÊU, PHƯƠNG HƯỚNG CÔNG TÁC HỘI VÀ PHONG TRÀO SINH VIÊN, NHIỆM KỲ 2025 - 2028" />
           <VoteGroupHeader title="I. THỜI CƠ, THÁCH THỨC GIAI ĐOẠN 2025 - 2028" />
           <VoteRow stt="1" label="Thời cơ" name="P2-I-1-ThoiCo" />
           <VoteRow stt="2" label="Thách thức" name="P2-I-2-ThachThuc" />
-
           <VoteGroupHeader title="II. MỤC TIÊU, KHẨU HIỆU HÀNH ĐỘNG VÀ HỆ THỐNG CHỈ TIÊU" />
           <VoteRow stt="1" label="Mục tiêu" name="P2-II-1-MucTieu" />
           <VoteRow
@@ -359,7 +365,6 @@ function VoteTable() {
             name="P2-II-2-KhauHieu"
           />
           <VoteRow stt="3" label="Hệ thống chỉ tiêu" name="P2-II-3-ChiTieu" />
-
           <VoteGroupHeader title="III. NHIỆM VỤ GIẢI PHÁP" />
           <VoteSubGroupHeader title="1. Phong trào “Sinh viên 5 tốt”" />
           <VoteRow
@@ -444,7 +449,7 @@ function VoteTable() {
             name="P2-III-4-DeAn"
           />
 
-          {/* --- PHẦN THỨ BA --- */}
+          {/* Phần 3 */}
           <VoteSectionHeader title="PHẦN THỨ BA: BÁO CÁO KIỂM ĐIỂM BAN CHẤP HÀNH HỘI SINH VIÊN VIỆT NAM TRƯỜNG KHÓA XIII, NHIỆM KỲ 2023 - 2025" />
           <VoteRow
             stt="I"
@@ -462,7 +467,8 @@ function VoteTable() {
     </div>
   );
 }
-// --- Component Hàng Tiêu đề Phần (Responsive) ---
+
+// --- Các Component phụ cho bảng (VoteSectionHeader, VoteGroupHeader, VoteSubGroupHeader, VoteRow) ---
 function VoteSectionHeader({ title }: { title: string }) {
   return (
     <div className="bg-blue-50 border-y border-blue-200 px-4 py-3">
@@ -470,8 +476,6 @@ function VoteSectionHeader({ title }: { title: string }) {
     </div>
   );
 }
-
-// --- Component Hàng Tiêu đề Nhóm (Responsive) ---
 function VoteGroupHeader({ title }: { title: string }) {
   return (
     <div className="bg-slate-50/50 px-4 py-3">
@@ -479,8 +483,6 @@ function VoteGroupHeader({ title }: { title: string }) {
     </div>
   );
 }
-
-// --- Component Hàng Tiêu đề Nhóm Con (Responsive) ---
 function VoteSubGroupHeader({ title }: { title: string }) {
   return (
     <div className="px-4 py-3">
@@ -488,8 +490,6 @@ function VoteSubGroupHeader({ title }: { title: string }) {
     </div>
   );
 }
-
-// --- Component Hàng Biểu Quyết (Responsive) ---
 function VoteRow({
   stt,
   label,
@@ -502,11 +502,7 @@ function VoteRow({
   indent?: number;
 }) {
   const idBase = `id-${name}`;
-  const indentClass = [
-    "lg:pl-4", // indent 0
-    "lg:pl-8", // indent 1
-    "lg:pl-12", // indent 2
-  ];
+  const indentClass = ["lg:pl-4", "lg:pl-8", "lg:pl-12"];
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-4 px-4 py-3 hover:bg-slate-50/70 transition-colors duration-150">
@@ -580,6 +576,7 @@ function VoteRow({
   );
 }
 
+// --- Component Field nhập liệu ---
 function Field({
   label,
   icon,
