@@ -53,7 +53,7 @@ export default function BieuQuyetPage() {
       if (response.ok) {
         // Nếu Function trả về OK, chuyển hướng
         // ✨ SỬA LẠI ĐƯỜNG DẪN SUCCESS CHO ĐÚNG ✨
-        router.push("/bieu-quyet/success"); // Đảm bảo đường dẫn này tồn tại
+        router.push("/bieuquyet/success"); // Đảm bảo đường dẫn này tồn tại
       } else {
         // Nếu Function trả về lỗi, hiển thị lỗi
         const errorText = await response.text();
