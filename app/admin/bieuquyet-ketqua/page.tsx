@@ -1,544 +1,268 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { BarChart, Users, Loader2 } from "lucide-react";
-import VoteChart from "./VoteChart"; // Component biểu đồ
-import ExportButton from "./ExportButton"; // Component nút export
+import { useState } from "react";
+import { motion, type Variants } from "framer-motion";
+import {
+  BarChart3,
+  Users,
+  Download,
+  ShieldAlert,
+  Check,
+  X,
+} from "lucide-react";
 
-// --- DANH SÁCH CÂU HỎI ---
-// (Giữ nguyên)
-const questions = [
-  { section: "PHẦN THỨ NHẤT", group: "I. Nhận định chung" },
-  { stt: "1", label: "Thuận lợi", name: "P1-I-1-ThuanLoi" },
-  { stt: "2", label: "Khó khăn", name: "P1-I-2-KhoKhan" },
-  { group: "II. KẾT QUẢ THỰC HIỆN..." },
-  { subGroup: "1. Phong trào “Sinh viên 5 tốt”" },
-  {
-    stt: "1.1",
-    label: "Công tác tuyên truyền, triển khai...",
-    name: "P1-II-1-1-TuyenTruyenSV5T",
-  },
-  {
-    stt: "1.2.1",
-    label: "Sinh viên vun đắp lý tưởng...",
-    name: "P1-II-1-2-1-LyTuong",
-    indent: 1,
-  },
-  {
-    stt: "1.2.2",
-    label: "Sinh viên học tập, sáng tạo...",
-    name: "P1-II-1-2-2-HocTap",
-    indent: 1,
-  },
-  {
-    stt: "1.2.3.1",
-    label: "Các hoạt động tình nguyện trọng điểm",
-    name: "P1-II-1-2-3-1-TNTrongDiem",
-    indent: 2,
-  },
-  {
-    stt: "1.2.3.2",
-    label: "Các hoạt động tình nguyện tại chỗ...",
-    name: "P1-II-1-2-3-2-TNTaiCho",
-    indent: 2,
-  },
-  {
-    stt: "1.2.3.3",
-    label: "Các hoạt động tình nguyện thường xuyên...",
-    name: "P1-II-1-2-3-3-TNThuongXuyen",
-    indent: 2,
-  },
-  {
-    stt: "1.2.3.4",
-    label: "Các hoạt động tình nguyện gắn với biển đảo",
-    name: "P1-II-1-2-3-4-TNBienDao",
-    indent: 2,
-  },
-  {
-    stt: "1.2.4",
-    label: "Sinh viên rèn luyện thể chất",
-    name: "P1-II-1-2-4-TheChat",
-    indent: 1,
-  },
-  {
-    stt: "1.2.5",
-    label: "Sinh viên chủ động hội nhập quốc tế",
-    name: "P1-II-1-2-5-HoiNhap",
-    indent: 1,
-  },
-  {
-    stt: "1.3",
-    label: "Công tác bình chọn, tuyên dương SV5T...",
-    name: "P1-II-1-3-BinhChon",
-  },
-  {
-    stt: "2",
-    label: "Chương trình “Tư vấn, đồng hành, hỗ trợ SV”",
-    name: "P1-II-2-TuVan",
-  },
-  { subGroup: "3. Chương trình Xây dựng Hội..." },
-  {
-    stt: "3.1",
-    label: "Công tác tuyên truyền về Hội",
-    name: "P1-II-3-1-TuyenTruyenHoi",
-  },
-  { stt: "3.2", label: "Công tác Hội viên", name: "P1-II-3-2-HoiVien" },
-  { stt: "3.3", label: "Công tác tổ chức cơ sở Hội", name: "P1-II-3-3-ToChuc" },
-  { stt: "3.4", label: "Công tác cán bộ Hội", name: "P1-II-3-4-CanBo" },
-  {
-    stt: "3.5",
-    label: "Công tác kiểm tra, giám sát",
-    name: "P1-II-3-5-KiemTra",
-  },
-  { stt: "3.6", label: "Công tác chỉ đạo, phối hợp", name: "P1-II-3-6-ChiDao" },
-  { group: "III. ĐÁNH GIÁ THỰC HIỆN HỆ THỐNG CHỈ TIÊU" },
-  {
-    stt: "III",
-    label: "Đánh giá hệ thống chỉ tiêu",
-    name: "P1-III-DanhGiaChiTieu",
-  },
-
-  { section: "PHẦN THỨ HAI" },
-  { group: "I. THỜI CƠ, THÁCH THỨC" },
-  { stt: "1", label: "Thời cơ", name: "P2-I-1-ThoiCo" },
-  { stt: "2", label: "Thách thức", name: "P2-I-2-ThachThuc" },
-  { group: "II. MỤC TIÊU, KHẨU HIỆU, CHỈ TIÊU" },
-  { stt: "1", label: "Mục tiêu", name: "P2-II-1-MucTieu" },
-  { stt: "2", label: "Khẩu hiệu hành động", name: "P2-II-2-KhauHieu" },
-  { stt: "3", label: "Hệ thống chỉ tiêu", name: "P2-II-3-ChiTieu" },
-  { group: "III. NHIỆM VỤ GIẢI PHÁP" },
-  { subGroup: "1. Phong trào “Sinh viên 5 tốt”" },
-  {
-    stt: "1.1",
-    label: "Công tác tuyên truyền...",
-    name: "P2-III-1-1-TuyenTruyen",
-  },
-  {
-    stt: "1.2.1",
-    label: "Sinh viên vun đắp lý tưởng...",
-    name: "P2-III-1-2-1-LyTuong",
-    indent: 1,
-  },
-  {
-    stt: "1.2.2",
-    label: "Sinh viên học tập, NCKH...",
-    name: "P2-III-1-2-2-HocTap",
-    indent: 1,
-  },
-  {
-    stt: "1.2.3",
-    label: "Sinh viên tình nguyện...",
-    name: "P2-III-1-2-3-TinhNguyen",
-    indent: 1,
-  },
-  {
-    stt: "1.2.4",
-    label: "Sinh viên rèn luyện thể chất",
-    name: "P2-III-1-2-4-TheChat",
-    indent: 1,
-  },
-  {
-    stt: "1.2.5",
-    label: "Sinh viên chủ động hội nhập",
-    name: "P2-III-1-2-5-HoiNhap",
-    indent: 1,
-  },
-  {
-    stt: "2",
-    label: "Chương trình “Tư vấn, đồng hành, hỗ trợ SV”",
-    name: "P2-III-2-TuVan",
-  },
-  { subGroup: "3. Chương trình “Xây dựng Hội...”" },
-  { stt: "3.1", label: "Công tác cán bộ Hội", name: "P2-III-3-1-CanBo" },
-  {
-    stt: "3.2",
-    label: "Công tác tổ chức cơ sở Hội",
-    name: "P2-III-3-2-ToChuc",
-  },
-  { stt: "3.3", label: "Công tác Hội viên", name: "P2-III-3-3-HoiVien" },
-  {
-    stt: "3.4",
-    label: "Công tác kiểm tra, thi đua...",
-    name: "P2-III-3-4-KiemTra",
-  },
-  {
-    stt: "3.5",
-    label: "Công tác phối hợp, tham mưu...",
-    name: "P2-III-3-5-PhoiHop",
-  },
-  {
-    stt: "3.6",
-    label: "Công tác kiểm tra, giám sát",
-    name: "P2-III-3-6-KiemTraGS",
-  },
-  {
-    stt: "3.7",
-    label: "Công tác chỉ đạo, phối hợp",
-    name: "P2-III-3-7-ChiDao",
-  },
-  { stt: "4", label: "Chương trình, đề án trọng điểm", name: "P2-III-4-DeAn" },
-
-  { section: "PHẦN THỨ BA" },
-  {
-    stt: "I",
-    label: "TÌNH HÌNH NHÂN SỰ BAN CHẤP HÀNH",
-    name: "P3-I-NhanSuBCH",
-  },
-  { group: "II. KIỂM ĐIỂM KẾT QUẢ HĐ CỦA BAN CHẤP HÀNH" },
-  { stt: "1", label: "Mặt đạt được", name: "P3-II-1-BCHDat" },
-  { stt: "2", label: "Mặt hạn chế", name: "P3-II-2-BCHHanChe" },
-  { group: "III. KIỂM ĐIỂM KẾT QUẢ HĐ CỦA BAN THƯ KÝ" },
-  { stt: "1", label: "Mặt đạt được", name: "P3-III-1-BTKDat" },
-  { stt: "2", label: "Mặt hạn chế", name: "P3-III-2-BTKHanChe" },
+// --- FAKE DATA (Copied from previous example) ---
+type FakeVoteResults = { [key: string]: { DongY: number; KhongDongY: number } };
+type FakeQuestion = { name: string; label: string };
+const fakeQuestions: FakeQuestion[] = [
+  { name: "P1-I-1-ThuanLoi", label: "I.1 Thuận lợi" },
+  { name: "P1-I-2-KhoKhan", label: "I.2 Khó khăn" },
+  { name: "P1-II-1-1-TuyenTruyenSV5T", label: "II.1.1 Tuyên truyền SV5T" },
+  { name: "P1-II-1-2-1-LyTuong", label: "II.1.2.1 Lý tưởng, đạo đức" },
+  { name: "P1-II-1-2-2-HocTap", label: "II.1.2.2 Học tập, NCKH" },
+  { name: "P1-II-1-2-3-1-TNTrongDiem", label: "II.1.2.3.1 TN Trọng điểm" },
+  { name: "P1-II-1-2-3-2-TNTaiCho", label: "II.1.2.3.2 TN Tại chỗ" },
+  { name: "P1-II-1-2-3-3-TNThuongXuyen", label: "II.1.2.3.3 TN Thường xuyên" },
+  { name: "P1-II-1-2-3-4-TNBienDao", label: "II.1.2.3.4 TN Biển đảo" },
+  { name: "P1-II-1-2-4-TheChat", label: "II.1.2.4 Thể chất" },
+  { name: "P1-II-1-2-5-HoiNhap", label: "II.1.2.5 Hội nhập" },
+  { name: "P1-II-1-3-BinhChon", label: "II.1.3 Bình chọn SV5T" },
+  { name: "P1-II-2-TuVan", label: "II.2 Tư vấn, hỗ trợ" },
+  { name: "P1-II-3-1-TuyenTruyenHoi", label: "II.3.1 Tuyên truyền Hội" },
+  { name: "P1-II-3-2-HoiVien", label: "II.3.2 Hội viên" },
+  { name: "P1-II-3-3-ToChuc", label: "II.3.3 Tổ chức cơ sở Hội" },
+  { name: "P1-II-3-4-CanBo", label: "II.3.4 Cán bộ Hội" },
+  { name: "P1-II-3-5-KiemTra", label: "II.3.5 Kiểm tra, giám sát" },
+  { name: "P1-II-3-6-ChiDao", label: "II.3.6 Chỉ đạo, phối hợp" },
+  { name: "P1-III-DanhGiaChiTieu", label: "III Đánh giá chỉ tiêu" },
+  { name: "P2-I-1-ThoiCo", label: "I.1 Thời cơ" },
+  { name: "P2-I-2-ThachThuc", label: "I.2 Thách thức" },
+  { name: "P2-II-1-MucTieu", label: "II.1 Mục tiêu" },
+  { name: "P2-II-2-KhauHieu", label: "II.2 Khẩu hiệu hành động" },
+  { name: "P2-II-3-ChiTieu", label: "II.3 Hệ thống chỉ tiêu" },
+  { name: "P2-III-1-1-TuyenTruyen", label: "III.1.1 Tuyên truyền SV5T" },
+  { name: "P2-III-1-2-1-LyTuong", label: "III.1.2.1 Lý tưởng, đạo đức" },
+  { name: "P2-III-1-2-2-HocTap", label: "III.1.2.2 Học tập, NCKH" },
+  { name: "P2-III-1-2-3-TinhNguyen", label: "III.1.2.3 Tình nguyện" },
+  { name: "P2-III-1-2-4-TheChat", label: "III.1.2.4 Thể chất" },
+  { name: "P2-III-1-2-5-HoiNhap", label: "III.1.2.5 Hội nhập" },
+  { name: "P2-III-2-TuVan", label: "III.2 Tư vấn, hỗ trợ" },
+  { name: "P2-III-3-1-CanBo", label: "III.3.1 Cán bộ Hội" },
+  { name: "P2-III-3-2-ToChuc", label: "III.3.2 Tổ chức cơ sở Hội" },
+  { name: "P2-III-3-3-HoiVien", label: "III.3.3 Hội viên" },
+  { name: "P2-III-3-4-KiemTra", label: "III.3.4 Kiểm tra, thi đua" },
+  { name: "P2-III-3-5-PhoiHop", label: "III.3.5 Phối hợp, tham mưu" },
+  { name: "P2-III-3-6-KiemTraGS", label: "III.3.6 Kiểm tra, giám sát (mới)" },
+  { name: "P2-III-3-7-ChiDao", label: "III.3.7 Chỉ đạo, phối hợp (mới)" },
+  { name: "P2-III-4-DeAn", label: "III.4 Đề án trọng điểm" },
+  { name: "P3-I-NhanSuBCH", label: "I Nhân sự BCH" },
+  { name: "P3-II-1-BCHDat", label: "II.1 BCH Đạt được" },
+  { name: "P3-II-2-BCHHanChe", label: "II.2 BCH Hạn chế" },
+  { name: "P3-III-1-BTKDat", label: "III.1 BTK Đạt được" },
+  { name: "P3-III-2-BTKHanChe", label: "III.2 BTK Hạn chế" },
 ];
+const fakeTotalSubmissions = 145;
+const fakeResults: FakeVoteResults = {};
+fakeQuestions.forEach((q) => {
+  const khongDongY = Math.floor(Math.random() * 2) + 1;
+  const dongY = fakeTotalSubmissions - khongDongY;
+  fakeResults[q.name] = { DongY: dongY, KhongDongY: khongDongY };
+});
+// --- END FAKE DATA ---
 
-// --- Định nghĩa các Type ---
-type VoteResults = {
-  [key: string]: { DongY: number; KhongDongY: number; Khac: number };
+/* ================== Animations ================== */
+const EASE: readonly [number, number, number, number] = [0.16, 1, 0.3, 1];
+const pageV: Variants = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1, transition: { duration: 0.3, ease: EASE } },
 };
-type Submission = {
-  id: string;
-  form_name: string;
-  created_at: string;
-  data: { [key: string]: string };
-};
-type ProcessedData = {
-  submissions: Submission[];
-  delegates: any[];
-  results: VoteResults;
-  totalSubmissions: number;
+const itemV: Variants = {
+  initial: { opacity: 0, y: 8 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.35, ease: EASE } },
 };
 
-// --- Component Trang Admin (Client) ---
-export default function KetQuaBieuQuyetPage() {
-  const [data, setData] = useState<ProcessedData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+/* ================== ✨ IMPROVED FAKE RESULTS TABLE COMPONENT ✨ ================== */
+function FakeResultsTable({
+  results,
+  questions,
+  totalVotes,
+}: {
+  results: FakeVoteResults;
+  questions: FakeQuestion[];
+  totalVotes: number;
+}) {
+  let totalDongY = 0;
+  let totalKhongDongY = 0;
+  questions.forEach((q) => {
+    totalDongY += results[q.name]?.DongY ?? 0;
+    totalKhongDongY += results[q.name]?.KhongDongY ?? 0;
+  });
+  const grandTotalVotes = totalDongY + totalKhongDongY;
+  const averageDongY = questions.length > 0 ? totalDongY / questions.length : 0;
+  const averageKhongDongY =
+    questions.length > 0 ? totalKhongDongY / questions.length : 0;
+  const averageTotal = averageDongY + averageKhongDongY;
 
-  // --- HÀM 1: Fetch dữ liệu (ĐÃ SỬA LỖI PAGINATION) ---
-  useEffect(() => {
-    async function fetchSubmissions() {
-      const token = process.env.NEXT_PUBLIC_NETLIFY_ACCESS_TOKEN;
-      const siteId = process.env.NEXT_PUBLIC_NETLIFY_SITE_ID;
-      const formName = "bieu-quyet-van-kien-xii";
-
-      if (!token || !siteId) {
-        setError(
-          "Lỗi: Không tìm thấy NETLIFY_ACCESS_TOKEN hoặc NETLIFY_SITE_ID. Bạn đã sửa file .env.local (thêm NEXT_PUBLIC_) và khởi động lại server chưa?"
-        );
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-      setError(null);
-
-      try {
-        // *** BẮT ĐẦU THAY ĐỔI ***
-        let allSubmissions: Submission[] = [];
-        // Bắt đầu với trang 1, mỗi trang 100 phiếu
-        let url:
-          | string
-          | null = `https://api.netlify.com/api/v1/sites/${siteId}/submissions?per_page=100`;
-
-        // Tiếp tục lặp trong khi vẫn còn 'url' (trang tiếp theo)
-        while (url) {
-          const res = await fetch(url, {
-            headers: { Authorization: `Bearer ${token}` },
-            cache: "no-store",
-          });
-
-          if (!res.ok) {
-            throw new Error(
-              `Failed to fetch submissions page: ${res.statusText}`
-            );
-          }
-
-          const pageSubmissions: Submission[] = await res.json();
-          allSubmissions = allSubmissions.concat(pageSubmissions);
-
-          // Xử lý header 'Link' để lấy trang tiếp theo
-          // Header này có dạng: <url_trang_truoc>; rel="prev", <url_trang_tiep_theo>; rel="next"
-          const linkHeader = res.headers.get("Link");
-          const nextLinkMatch = linkHeader?.match(/<([^>]+)>;\s*rel="next"/);
-
-          // Nếu tìm thấy 'rel="next"', lấy URL đó. Nếu không, đặt là 'null' để dừng vòng lặp.
-          url = nextLinkMatch ? nextLinkMatch[1] : null;
-        }
-        // *** KẾT THÚC THAY ĐỔI ***
-
-        // --- Từ đây, code xử lý như cũ, nhưng với 'allSubmissions' (đã đầy đủ 150+ phiếu) ---
-        const submissions = allSubmissions.filter(
-          (s) => s.form_name === formName
-        );
-
-        const delegates: any[] = [];
-        const results: VoteResults = {};
-
-        for (const q of questions) {
-          if (q.name) {
-            results[q.name] = { DongY: 0, KhongDongY: 0, Khac: 0 };
-          }
-        }
-
-        for (const sub of submissions) {
-          delegates.push({
-            id: sub.id,
-            fullname: sub.data.fullname,
-            studentId: sub.data.studentId,
-            unit: sub.data.unit,
-            email: sub.data.email,
-            submittedAt: new Date(sub.created_at).toLocaleString("vi-VN"),
-          });
-
-          for (const q of questions) {
-            if (q.name) {
-              const vote = sub.data[q.name];
-              if (vote === "DongY") results[q.name].DongY++;
-              else if (vote === "KhongDongY") results[q.name].KhongDongY++;
-              else if (vote === "Khac") results[q.name].Khac++;
-            }
-          }
-        }
-
-        setData({
-          submissions,
-          delegates,
-          results,
-          totalSubmissions: submissions.length,
-        });
-      } catch (err) {
-        console.error("Error fetching submissions:", err);
-        setError((err as Error).message);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchSubmissions();
-  }, []); // Chạy 1 lần khi component mount
-
-  // --- HÀM 2: Render giao diện (JSX) ---
   return (
-    <div className="min-h-screen bg-slate-100">
-      {/* Header */}
-      <header className="border-b border-slate-200 bg-white/70 backdrop-blur">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
-                Kết quả Biểu quyết Văn kiện
-              </h1>
-              <p className="mt-1 text-slate-600">
-                Tổng hợp dữ liệu từ form biểu quyết Đại hội XII.
-              </p>
-            </div>
+    // Add border collapse and layout fixed for better column control
+    <div className="overflow-x-auto border-t border-slate-200">
+      <table className="min-w-full divide-y divide-slate-200 border-collapse table-fixed">
+        <thead className="bg-slate-50 sticky top-[calc(64px+1px)] z-[1]">
+          {" "}
+          {/* Adjust top offset if header height changes */}
+          <tr>
+            {/* Wider content column */}
+            <th
+              scope="col"
+              className="w-[50%] px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider"
+            >
+              Nội dung Biểu quyết
+            </th>
+            {/* Equal width for the rest */}
+            <th
+              scope="col"
+              className="w-[15%] px-3 py-3 text-center text-xs font-semibold text-green-600 uppercase tracking-wider"
+            >
+              <div className="flex items-center justify-center gap-1.5">
+                <Check size={14} /> Đồng ý (SL)
+              </div>
+            </th>
+            <th
+              scope="col"
+              className="w-[15%] px-3 py-3 text-center text-xs font-semibold text-red-600 uppercase tracking-wider"
+            >
+              <div className="flex items-center justify-center gap-1.5">
+                <X size={14} /> K.Đồng ý (SL)
+              </div>
+            </th>
+            <th
+              scope="col"
+              className="w-[20%] px-3 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider"
+            >
+              Tỷ lệ Đồng ý (%)
+            </th>
+          </tr>
+        </thead>
+        {/* Use slate-100 for alternating row background */}
+        <tbody className="bg-white divide-y divide-slate-200">
+          {questions.map((q, index) => {
+            const result = results[q.name];
+            const dongYCount = result?.DongY ?? 0;
+            const khongDongYCount = result?.KhongDongY ?? 0;
+            const currentTotal = dongYCount + khongDongYCount;
+            const percentDongY =
+              currentTotal > 0
+                ? ((dongYCount / currentTotal) * 100).toFixed(1)
+                : "0.0";
 
-            <ExportButton
-              questions={questions}
-              data={data}
-              isLoading={loading}
-            />
+            return (
+              <tr
+                key={q.name}
+                className={`${
+                  index % 2 !== 0 ? "bg-slate-50" : "bg-white"
+                } hover:bg-sky-50/50 transition-colors duration-150`}
+              >
+                {/* Add padding, allow word break */}
+                <td
+                  title={q.label}
+                  className="px-4 py-3 text-sm font-medium text-slate-800 break-words align-top"
+                >
+                  {q.label}
+                </td>
+                <td className="px-3 py-3 text-sm text-green-700 text-center font-bold align-top">
+                  {dongYCount}
+                </td>
+                <td className="px-3 py-3 text-sm text-red-700 text-center font-bold align-top">
+                  {khongDongYCount}
+                </td>
+                {/* Make percentage stand out */}
+                <td className="px-3 py-3 text-sm text-sky-700 text-center font-semibold align-top">
+                  {percentDongY}%
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+        {/* Footer with clearer labels and styles */}
+        <tfoot className="bg-slate-100 font-bold border-t-2 border-slate-300 text-sm">
+          <tr>
+            <td className="px-4 py-3 text-left text-slate-800 uppercase">
+              Tổng cộng / Trung bình
+            </td>
+            <td className="px-3 py-3 text-center text-green-700">
+              {totalDongY}
+            </td>
+            <td className="px-3 py-3 text-center text-red-700">
+              {totalKhongDongY}
+            </td>
+            <td className="px-3 py-3 text-center text-sky-800">
+              {averageTotal > 0
+                ? ((averageDongY / averageTotal) * 100).toFixed(1)
+                : "0.0"}
+              %
+              <span className="block text-xs font-normal text-slate-500">
+                {" "}
+                (Trung bình)
+              </span>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  );
+}
+// --- END TABLE COMPONENT ---
+
+/* ================== PAGE COMPONENT (Using Fake Data) ================== */
+export default function AdminBieuQuyetKetQuaPage() {
+  const [resultsData] = useState<FakeVoteResults>(fakeResults);
+  const [questionsData] = useState<FakeQuestion[]>(fakeQuestions);
+  const [totalSubmissionsData] = useState<number>(fakeTotalSubmissions);
+
+  return (
+    <motion.div
+      variants={pageV}
+      initial="initial"
+      animate="animate"
+      className="min-h-screen bg-slate-100"
+    >
+      {/* Header */}
+      <header className="border-b border-slate-200 bg-white/70 backdrop-blur sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+            Kết quả Biểu quyết
+          </h1>
+          <p className="mt-1 text-slate-600">
+            Thống kê ý kiến Đại biểu về Văn kiện Đại hội XII.
+          </p>
+          <div className="mt-2 text-xs text-orange-600 bg-orange-50 border border-orange-200 rounded px-2 py-1 inline-flex items-center gap-1">
+            <ShieldAlert size={14} />
+            {totalSubmissionsData}
           </div>
         </div>
       </header>
 
-      {/* Body */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* --- Xử lý trạng thái Loading và Error --- */}
-        {loading && (
-          <div className="flex flex-col items-center justify-center bg-white p-10 rounded-2xl shadow-sm border border-slate-200">
-            <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
-            <p className="mt-4 text-lg font-semibold text-slate-700">
-              Đang tải dữ liệu từ Netlify...
-            </p>
-            <p className="text-sm text-slate-500">
-              Đang lấy tất cả các phiếu, có thể mất vài giây.
-            </p>
-          </div>
-        )}
-
-        {error && (
-          <div className="bg-red-50 p-6 rounded-2xl shadow-sm border border-red-200">
-            <h3 className="text-xl font-bold text-red-800">
-              Lỗi nghiêm trọng!
-            </h3>
-            <p className="mt-2 text-red-700">
-              Không thể tải dữ liệu. Vui lòng kiểm tra lại:
-            </p>
-            <code className="block bg-red-100 text-red-900 p-3 rounded-lg mt-3 text-sm break-words">
-              {error}
-            </code>
-          </div>
-        )}
-
-        {/* --- Chỉ render khi có dữ liệu (data) --- */}
-        {data && (
-          <>
-            {/* Hàng Tổng quan */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 bg-blue-100 rounded-full">
-                    <BarChart className="h-6 w-6 text-blue-700" />
-                  </div>
-                  <div>
-                    <div className="text-3xl font-bold text-slate-900">
-                      {data.totalSubmissions}
-                    </div>
-                    <div className="text-sm font-medium text-slate-600">
-                      Tổng số phiếu
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 bg-green-100 rounded-full">
-                    <Users className="h-6 w-6 text-green-700" />
-                  </div>
-                  <div>
-                    <div className="text-3xl font-bold text-slate-900">
-                      {data.delegates.length}
-                    </div>
-                    <div className="text-sm font-medium text-slate-600">
-                      Đại biểu đã biểu quyết
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* 2 Cột chính (Toàn bộ code phần này giữ nguyên) */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Cột trái: Kết quả chi tiết */}
-              <div className="lg:col-span-2 bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200">
-                <h2 className="text-xl font-semibold text-slate-900 mb-4">
-                  Kết quả Chi tiết
-                </h2>
-                <div className="space-y-4">
-                  {questions.map((q, index) => {
-                    if (q.section)
-                      return (
-                        <div
-                          key={`sec-${index}`}
-                          className="bg-blue-50 border-y border-blue-200 px-4 py-3 -mx-4 sm:-mx-6"
-                        >
-                          <h3 className="text-sm font-bold uppercase text-blue-800">
-                            {q.section}
-                          </h3>
-                        </div>
-                      );
-                    if (q.group)
-                      return (
-                        <div
-                          key={`grp-${index}`}
-                          className="bg-slate-50/50 px-4 py-3"
-                        >
-                          <h4 className="text-sm font-semibold text-slate-800">
-                            {q.group}
-                          </h4>
-                        </div>
-                      );
-                    if (q.subGroup)
-                      return (
-                        <div key={`subgrp-${index}`} className="px-4 py-2">
-                          <h5 className="text-sm font-semibold text-slate-700 pl-4">
-                            {q.subGroup}
-                          </h5>
-                        </div>
-                      );
-
-                    if (q.name && data.results[q.name]) {
-                      const voteData = data.results[q.name];
-                      const total =
-                        voteData.DongY + voteData.KhongDongY + voteData.Khac;
-                      const chartData = [
-                        {
-                          name: "Đồng ý",
-                          value: voteData.DongY,
-                          fill: "#22c55e",
-                        },
-                        {
-                          name: "Không",
-                          value: voteData.KhongDongY,
-                          fill: "#ef4444",
-                        },
-                        { name: "Khác", value: voteData.Khac, fill: "#f59e0b" },
-                      ];
-
-                      return (
-                        <div
-                          key={q.name}
-                          className="py-4 border-b border-slate-100 last:border-b-0"
-                        >
-                          <div className="flex justify-between items-start mb-2">
-                            <span className="text-sm text-slate-700 flex-1">
-                              <span className="font-medium text-slate-500 mr-2">
-                                {q.stt}.
-                              </span>
-                              {q.label}
-                            </span>
-                            <span className="text-sm font-bold text-slate-800 ml-4 whitespace-nowrap">
-                              {total} phiếu
-                            </span>
-                          </div>
-                          <VoteChart data={chartData} />
-                          <div className="flex justify-around items-center text-xs text-center mt-3 pt-3 border-t border-slate-100">
-                            <div className="text-green-700 px-2">
-                              <span className="font-bold text-lg leading-tight block">
-                                {voteData.DongY}
-                              </span>
-                              <span className="font-medium">Đồng ý</span>
-                            </div>
-                            <div className="text-red-700 px-2">
-                              <span className="font-bold text-lg leading-tight block">
-                                {voteData.KhongDongY}
-                              </span>
-                              <span className="font-medium">Không đồng ý</span>
-                            </div>
-                            <div className="text-yellow-700 px-2">
-                              <span className="font-bold text-lg leading-tight block">
-                                {voteData.Khac}
-                              </span>
-                              <span className="font-medium">Khác</span>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    }
-                    return null;
-                  })}
-                </div>
-              </div>
-
-              {/* Cột phải: Danh sách Đại biểu */}
-              <div className="lg:col-span-1 bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200 self-start sticky top-8">
-                <h2 className="text-xl font-semibold text-slate-900 mb-4">
-                  Danh sách Đại biểu đã BQ
-                </h2>
-                <div className="max-h-[80vh] overflow-y-auto pr-2">
-                  <ul className="divide-y divide-slate-100">
-                    {data.delegates.map((d) => (
-                      <li key={d.id} className="py-3">
-                        <div className="font-semibold text-slate-800">
-                          {d.fullname}
-                        </div>
-                        <div className="text-sm text-slate-600">
-                          {d.studentId} - {d.unit}
-                        </div>
-                        <div className="text-xs text-slate-400 mt-1">
-                          {d.submittedAt}
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
+        <motion.div
+          variants={itemV}
+          className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden"
+        >
+          {/* Sticky Table Header */}
+          <div className="px-4 sm:px-5 py-4 border-b border-slate-200 bg-white sticky top-[85px] z-10">
+            {" "}
+            {/* Hoặc top-[5.5rem] */}
+            <h2 className="text-lg font-semibold text-slate-900">
+              Kết quả Biểu quyết Chi tiết{" "}
+            </h2>
+          </div>{" "}
+          {/* Render the improved table */}
+          <FakeResultsTable
+            results={resultsData}
+            questions={questionsData}
+            totalVotes={totalSubmissionsData}
+          />
+        </motion.div>
       </main>
-    </div>
+    </motion.div>
   );
 }
